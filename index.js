@@ -12,7 +12,6 @@ require('dotenv').config();
 
 const db = monk(process.env.MONGODB_URI || 'mongodb+srv://admin:Hora1234@cluster0.ouwqb.mongodb.net/myFirstDatabase?retryWrites=true&w=majority');
 const urls = db.get('urls');
-const users = db.get('users')
 urls.createIndex({ slug: 1 }, { unique: true });
 
 const app = express();
@@ -31,18 +30,6 @@ app.get('/:id', async (req, res, next) => {
     const url = await urls.findOne({ slug });
     if (url) {
       return res.redirect(url.url);
-    }
-    return res.status(404).sendFile(notFoundPath);
-  } catch (error) {
-    return res.status(404).sendFile(notFoundPath);
-  }
-});
-
-app.get('/api/users', async (req, res, next) => {
-  try {
-    const dataUsers = await users.find({});
-    if (dataUsers) {
-      return res.json(dataUsers);
     }
     return res.status(404).sendFile(notFoundPath);
   } catch (error) {
