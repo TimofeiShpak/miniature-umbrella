@@ -9,9 +9,9 @@ const slowDown = require('express-slow-down');
 const { nanoid } = require('nanoid');
 
 require('dotenv').config();
-
-const db = monk(process.env.MONGODB_URI);
+const db = monk(process.env.MONGODB_URI || 'mongodb+srv://admin:Hora1234@cluster0.ouwqb.mongodb.net/myFirstDatabase?retryWrites=true&w=majority');
 const urls = db.get('urls');
+const users = db.get('users');
 urls.createIndex({ slug: 1 }, { unique: true });
 
 const app = express();
@@ -23,6 +23,18 @@ app.use(express.json());
 app.use(express.static('./public'));
 
 const notFoundPath = path.join(__dirname, 'public/404.html');
+
+app.get("/api/users", function(req, res){
+  try {
+    const dataUsers = await users.find({});
+    if (dataUsers) {
+      return res.send(dataUsers);
+    }
+    return res.status(404).sendFile(notFoundPath);
+  } catch (error) {
+    return res.status(404).sendFile(notFoundPath);
+  }
+});
 
 app.get('/:id', async (req, res, next) => {
   const { id: slug } = req.params;
