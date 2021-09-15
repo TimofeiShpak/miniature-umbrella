@@ -42,7 +42,7 @@ app.get('/api/users', async (req, res, next) => {
   try {
     const dataUsers = await users.find({});
     if (dataUsers) {
-      return res.send(dataUsers);
+      return res.json(dataUsers);
     }
     return res.status(404).sendFile(notFoundPath);
   } catch (error) {
