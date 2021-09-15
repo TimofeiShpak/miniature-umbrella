@@ -24,7 +24,7 @@ app.use(express.static('./public'));
 
 const notFoundPath = path.join(__dirname, 'public/404.html');
 
-app.get("/api/users", function(req, res){
+app.get("/api/users", async (req, res) => {
   try {
     const dataUsers = await users.find({});
     if (dataUsers) {
