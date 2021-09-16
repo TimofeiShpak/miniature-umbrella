@@ -2,11 +2,8 @@ const path = require('path');
 const express = require('express');
 const morgan = require('morgan');
 const helmet = require('helmet');
-const yup = require('yup');
 const monk = require('monk');
-const rateLimit = require('express-rate-limit');
-const slowDown = require('express-slow-down');
-const { nanoid } = require('nanoid');
+const jsonParser = express.json();
 
 require('dotenv').config();
 const db = monk(process.env.MONGODB_URI || 'mongodb+srv://admin:Hora1234@cluster0.ouwqb.mongodb.net/myFirstDatabase?retryWrites=true&w=majority');
@@ -26,6 +23,7 @@ const notFoundPath = path.join(__dirname, 'public/404.html');
 
 app.get("/api/users", async (req, res) => {
   try {
+    if(!req.body) return res.status(404).sendFile(notFoundPath);
     const dataUsers = await users.find({});
     if (dataUsers) {
       return res.send(dataUsers);
@@ -36,12 +34,13 @@ app.get("/api/users", async (req, res) => {
   }
 });
 
-app.get('/:id', async (req, res, next) => {
-  const { id: slug } = req.params;
+app.get("/api/users/:id", async (req, res) => {
   try {
-    const url = await urls.findOne({ slug });
-    if (url) {
-      return res.redirect(url.url);
+    if(!req.body) return res.status(404).sendFile(notFoundPath);
+    const id = req.params.id;
+    const dataUser = await users.findOne({_id: id});
+    if (dataUser) {
+      return res.send(dataUser);
     }
     return res.status(404).sendFile(notFoundPath);
   } catch (error) {
@@ -49,44 +48,26 @@ app.get('/:id', async (req, res, next) => {
   }
 });
 
-const schema = yup.object().shape({
-  slug: yup.string().trim().matches(/^[\w\-]+$/i),
-  url: yup.string().trim().url().required(),
-});
+app.post("/api/users", jsonParser, async (req, res) => {
+  try { 
+    if(!req.body) return res.status(404).sendFile(notFoundPath);
+    const userName = req.body.name;
+    const userAge = req.body.age;
+    const user = {name: userName, age: userAge};
+    const created = await users.insert(user);
+    res.send(created);
+  } catch(error) {
+    next(error);
+  }
+}); 
 
-app.post('/url', slowDown({
-  windowMs: 30 * 1000,
-  delayAfter: 1,
-  delayMs: 500,
-}), rateLimit({
-  windowMs: 30 * 1000,
-  max: 1,
-}), async (req, res, next) => {
-  let { slug, url } = req.body;
+app.delete("/api/users/:id", async (req, res) => {
   try {
-    await schema.validate({
-      slug,
-      url,
-    });
-    if (url.includes('cdg.sh')) {
-      throw new Error('Stop it. 🛑');
-    }
-    if (!slug) {
-      slug = nanoid(5);
-    } else {
-      const existing = await urls.findOne({ slug });
-      if (existing) {
-        throw new Error('Slug in use. 🍔');
-      }
-    }
-    slug = slug.toLowerCase();
-    const newUrl = {
-      url,
-      slug,
-    };
-    const created = await urls.insert(newUrl);
-    res.json(created);
-  } catch (error) {
+    if(!req.body) return res.status(404).sendFile(notFoundPath);
+    const id = req.params.id;
+    const deleted = await users.findOneAndDelete({_id: id})
+    res.send(deleted);            
+  } catch {
     next(error);
   }
 });
@@ -107,7 +88,7 @@ app.use((error, req, res, next) => {
   });
 });
 
-const port = process.env.PORT || 1337;
+const port = process.env.PORT || 3000;
 app.listen(port, () => {
   console.log(`Listening at http://localhost:${port}`);
 });
