@@ -72,6 +72,20 @@ app.delete("/api/users/:id", async (req, res) => {
   }
 });
 
+app.put("/api/users", jsonParser, async (req, res) => {
+  try {       
+    if(!req.body) return res.status(404).sendFile(notFoundPath);
+    const id = req.body.id;
+    const userName = req.body.name;
+    const userAge = req.body.age;
+      
+    const updated = await users.findOneAndUpdate({_id: id}, { $set: {age: userAge, name: userName}}, {returnDocument: "after" })
+    res.send(updated);   
+  } catch {
+    next(error);
+  }
+});
+
 app.use((req, res, next) => {
   res.status(404).sendFile(notFoundPath);
 });
