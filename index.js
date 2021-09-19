@@ -4,12 +4,10 @@ const morgan = require('morgan');
 const helmet = require('helmet');
 const monk = require('monk');
 const jsonParser = express.json();
-
 require('dotenv').config();
+
 const db = monk(process.env.MONGODB_URI || 'mongodb+srv://admin:Hora1234@cluster0.ouwqb.mongodb.net/myFirstDatabase?retryWrites=true&w=majority');
-const urls = db.get('urls');
 const users = db.get('users');
-urls.createIndex({ slug: 1 }, { unique: true });
 
 const app = express();
 app.enable('trust proxy');
@@ -57,7 +55,18 @@ app.post("/api/users", jsonParser, async (req, res) => {
     const created = await users.insert(user);
     res.send(created);
   } catch(error) {
-    next(error);
+    return res.status(404).sendFile(notFoundPath);
+  }
+}); 
+
+app.post("/api/users-update-all", jsonParser, async (req, res) => {
+  try { 
+    if(!req.body) return res.status(404).sendFile(notFoundPath);
+    await users.remove();
+    const created = await users.insert(req.body.users);
+    res.send(created);
+  } catch(error) {
+    return res.status(404).sendFile(notFoundPath);
   }
 }); 
 
@@ -68,7 +77,7 @@ app.delete("/api/users/:id", async (req, res) => {
     const deleted = await users.findOneAndDelete({_id: id})
     res.send(deleted);            
   } catch {
-    next(error);
+    return res.status(404).sendFile(notFoundPath);
   }
 });
 
@@ -82,7 +91,7 @@ app.put("/api/users", jsonParser, async (req, res) => {
     const updated = await users.findOneAndUpdate({_id: id}, { $set: {age: userAge, name: userName}}, {returnDocument: "after" })
     res.send(updated);   
   } catch {
-    next(error);
+    return res.status(404).sendFile(notFoundPath);
   }
 });
 
