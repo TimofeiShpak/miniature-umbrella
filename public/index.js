@@ -5,7 +5,7 @@ let studentId = 0;
 let modalAddStudent = document.querySelector('.modal--student-wrapper')
 let saveStudent = document.getElementById("save")
 let users;
-var table;
+let table;
 let options = {
   'имя': 'name',
   'возраст': 'age',
@@ -23,12 +23,12 @@ function initTable(data) {
           { title: "возраст" },
       ],
       // кнопка для скачивания в excel
-      buttons: [
-      {
+      buttons: [{
         extend: 'excel',
         text: 'Скачать excel',
         className: 'exportExcel',
-        filename: 'Список студентов',
+        filename: 'list',
+        title: null,
         exportOptions: {
           modifier: {
             page: 'all'
@@ -68,7 +68,7 @@ function initTable(data) {
 
     // // нажатие на ячейку
     // $('#example tbody').on('click', 'tr', function () {
-    //   var data = table.row( this ).data();
+    //   let data = table.row( this ).data();
     //   alert( 'You clicked on '+data[0]+'\'s row' );
     // } );
 
@@ -77,7 +77,7 @@ function initTable(data) {
       e.preventDefault();
 
         // Get the column API object
-        var column = table.column( $(this).attr('data-column') );
+        let column = table.column( $(this).attr('data-column') );
 
         // Toggle the visibility
         column.visible( ! column.visible() );
@@ -263,21 +263,27 @@ document.querySelector('#button-edit').addEventListener('click', () => {
 
 $(document).ready(function(){
   $("#fileUploader").change(function(evt){
-        var selectedFile = evt.target.files[0];
-        var reader = new FileReader();
+        let selectedFile = evt.target.files[0];
+        let reader = new FileReader();
         reader.onload = function(event) {
-          var data = event.target.result;
-          var workbook = XLSX.read(data, {
+          let data = event.target.result;
+          let workbook = XLSX.read(data, {
               type: 'binary'
           });
           workbook.SheetNames.forEach(function(sheetName) {
             
-              var XL_row_object = XLSX.utils.sheet_to_row_object_array(workbook.Sheets[sheetName]);
-              users = XL_row_object.map(x => Object.values(x));
+              let XL_row_object = XLSX.utils.sheet_to_row_object_array(workbook.Sheets[sheetName]);
+              let preparedData = XL_row_object.map(x => {
+                return {
+                  age: x['возраст'],
+                  name: x['имя']
+                }
+              })
+              users = preparedData.map(x => Object.values(x));
               table.clear();
               table.rows.add(users);
               table.draw();
-              UpdateAllUsers(XL_row_object);
+              UpdateAllUsers(preparedData);
             })
         };
 
