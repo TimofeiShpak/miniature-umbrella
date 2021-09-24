@@ -3,37 +3,49 @@ let typesName = [
     name: 'Лекции',
     secondName: 'Коллоквиум',
     additionalName: 'Установочные лекции',
-    namesType: ['Лекции дневное обучение', 'Лекции заочное обучение']
+    namesType: ['Лекции дневное обучение', 'Лекции заочное обучение', 'Лекции очно-заочное обучение']
   },
   {
     name: 'Практические',
     additionalName: 'Установочные практические занятия',
-    namesType: ['Практика дневное обучение', 'Практика заочное обучение']
+    namesType: ['Практика дневное обучение', 'Практика заочное обучение', 'Практика очно-заочное обучение']
+  },
+  {
+    name: 'РГР',
+    namesType: ['РГР дневное обучение', 'РГР заочное обучение', 'РГР очно-заочное обучение']
   },
   {
     name: 'Лабораторные',
-    namesType: ['Лабораторные дневное обучение', 'Лабораторные заочное обучение']
+    namesType: ['Лабораторные дневное обучение', 'Лабораторные заочное обучение', 'Лабораторные очно-заочное обучение']
   },
   {
     name: 'Контрольная работа',
-    namesType: ['Контрольная работа дневное обучение', 'Контрольная работа заочное обучение']
+    namesType: ['Контрольная работа дневное обучение', 'Контрольная работа заочное обучение', 'Контрольная работа очно-заочное обучение']
   },
   {
     name: 'Экзамен',
-    namesType: ['Экзамен дневное обучение', 'Экзамен заочное обучение']
+    namesType: ['Экзамен дневное обучение', 'Экзамен заочное обучение', 'Экзамен очно-заочное обучение']
   },
   {
     name: 'Зачет',
-    namesType: ['Зачеты дневное обучение', 'Зачеты заочное обучение']
+    namesType: ['Зачеты дневное обучение', 'Зачеты заочное обучение', 'Зачеты очно-заочное обучение']
+  },
+  {
+    name: 'Курсовой проект',
+    namesType: ['Курсовой проект дневное обучение', 'Курсовой проект заочное обучение', 'Курсовой проект очно-заочное обучение']
   },
   {
     name: 'Курсовая работа',
-    namesType: ['Курсовая  работа дневное обучение', 'Курсовая  работа заочное обучение']
+    namesType: ['Курсовая работа дневное обучение', 'Курсовая работа заочное обучение', 'Курсовая работа очно-заочное обучение']
   },
   {
     name: 'Консультации',
-    namesType: ['Консультации дневное обучение', 'Консультации заочное обучение']
-  }
+    namesType: ['Консультации дневное обучение', 'Консультации заочное обучение', 'Консультации очно-заочное обучение']
+  },
+  {
+    name: 'Прочие практики',
+    namesType: ['Практика дневное обучение', 'Практика заочное обучение', 'Практика очно-заочное обучение']
+  },
 ];
 
 let table;
@@ -186,7 +198,7 @@ function setHours(hours, row) {
   if (allHours) {
     row[8] = allHours;
   }
-  return lastIndex;
+  return allHours;
 }
 
 function filterByType(values, typeFirst, typeSecond) {
@@ -214,7 +226,7 @@ function prepareData(dataFuture, dataCurrent, nameType) {
   if (dataFuture.length || dataCurrent.length) {
     let dataHours = getHours(dataFuture, true).concat(getHours(dataCurrent))
     let data = getDataTable(dataFuture.concat(dataCurrent), dataHours, nameType)
-    let filteredData = filterByType(data, 2, 3)
+    let filteredData = filterByType(data, 2, 3);
     let wholeData = getLastRow(filteredData, dataHours);
     return wholeData;
   }
@@ -223,8 +235,10 @@ function prepareData(dataFuture, dataCurrent, nameType) {
 
 function createData(allValues, generalType) {
   let type = 'очная';
-  let additionalTypes = ['заочная', 'заочная сокращенная']
+  let additionalTypes = ['заочная', 'заочная сокращенная'];
+  let mixType = ['очно-заочная'];
   let { name, additionalName, namesType, secondName } = generalType;
+
   let dataFuture = [];
   if (additionalName) {
     dataFuture = allValues.filter(x => x[1].includes(additionalName) && x[6] === type)
@@ -242,8 +256,20 @@ function createData(allValues, generalType) {
   }
   let additionalData = allValues.filter(x => x[1].includes(name) && additionalTypes.includes(x[6]))
   let additionalPreparedData = prepareData(additionalDataFuture, additionalData, namesType[1]);
+  preparedData.concat(additionalPreparedData);
 
-  let datatable = preparedData.concat(additionalPreparedData);
+  let mixDataFuture = [];
+  if (additionalName) {
+    mixDataFuture = allValues.filter(x => x[1].includes(additionalName) && mixType.includes(x[6]))
+  }
+  let mixData = allValues.filter(x => x[1].includes(name) && mixType.includes(x[6]))
+  if (secondName) {
+    let secondData = allValues.filter(x => x[1].includes(secondName) && mixType.includes(x[6]));
+    mixData = mixData.concat(secondData)
+  }
+  let mixPreparedData = prepareData(mixDataFuture, mixData, namesType[2]);
+  let datatable = preparedData.concat(mixPreparedData);
+
   return datatable;
 }
 
@@ -260,6 +286,9 @@ function writeAllHours(datatable) {
 
 function checkDataTable(datatable) {
   for (let i = 0; i < datatable.length; i++) {
+    while (datatable[i][2] && !datatable[i][8]) {
+      datatable.splice(i,1)
+    }
     for (let j = 0; j < 10; j++) {
       if (!datatable[i][j]) {
         datatable[i][j] = '';
@@ -276,14 +305,14 @@ function unificationData(x) {
   if (indexGroup !== -1) {
     x[4] = x[1].slice(indexGroup+3);
   }
-  x[3] = parseFloat(x[3]);
+  x[3] = parseFloat(`${x[3]}`.replace(',', '.'));
   x[8] = parseFloat(x[8]);
   return x;
 }
 
 function init(XL_row_object) {
   let allValues = XL_row_object.map(x => Object.values(x)).filter(x => x.length === 11).map(x => unificationData(x));
-  
+
   let datatable = []
   datatable[0] = ['1','2','3','4','5','6','7','8','9','10']
   for (let i = 0; i < typesName.length; i++) {
