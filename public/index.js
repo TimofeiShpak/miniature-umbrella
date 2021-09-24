@@ -1,15 +1,49 @@
+let typesName = [
+  {
+    name: 'Лекции',
+    additionalName: 'Установочные лекции',
+    namesType: ['Лекции д/о', 'Лекции з/о']
+  },
+  {
+    name: 'Практические',
+    additionalName: 'Установочные практические занятия',
+    namesType: ['Практика д/о', 'Практика з/о']
+  },
+  {
+    name: 'Лабораторные',
+    namesType: ['Лабораторные д/о', 'Лабораторные з/о']
+  },
+  {
+    name: 'Контрольная работа',
+    namesType: ['Контрольная работа д/о', 'Контрольная работа з/о']
+  },
+  {
+    name: 'Экзамен',
+    namesType: ['Экз д/о', 'Экз з/о']
+  },
+  {
+    name: 'Зачет',
+    namesType: ['Зачеты д/о', 'Зачеты з/о']
+  },
+  {
+    name: 'Курсовая работа',
+    namesType: ['Курсовая  работа д/о', 'Курсовая  работа з/о']
+  },
+  {
+    name: 'Консультации',
+    namesType: ['Конс. д/о', 'Конс. з/о']
+  }
+];
 
-let studentName = document.getElementById("studentName")
-let studentAge = document.getElementById("studentAge")
-let studentId = 0;
-let modalAddStudent = document.querySelector('.modal--student-wrapper')
-let saveStudent = document.getElementById("save")
-let users;
 let table;
-let options = {
-  'имя': 'name',
-  'возраст': 'age',
-}
+let lastIndex = 0;
+let typeIndex = 1;
+let firstPeriodHours = 0;
+let secondPeriodHours = 0;
+let tablewidth = [5,14,14,14,7,7,7,7,7,7];
+
+let titles = [];
+let titleLength = 0;
 
 function initTable(data) {
   $(document).ready(function() {
@@ -17,22 +51,49 @@ function initTable(data) {
       // данные
       data: data,
       dom: 'Bfrtip',
-      // название столбцов
-      columns: [
-          { title: "имя" },
-          { title: "возраст" },
+      paging: false,
+      ordering: false,
+      info: false,
+      searching: false,
+      bAutoWidth: false, 
+      aoColumns : [
+        { sWidth: '10%' },
+        { sWidth: '10%' },
+        { sWidth: '10%' },
+        { sWidth: '10%' },
+        { sWidth: '10%' },
+        { sWidth: '10%' },
+        { sWidth: '10%' },
+        { sWidth: '10%' },
+        { sWidth: '10%' },
+        { sWidth: '10%' }
       ],
       // кнопка для скачивания в excel
       buttons: [{
-        extend: 'excel',
+        'extend': 'excel',
         text: 'Скачать excel',
         className: 'exportExcel',
         filename: 'list',
         title: null,
+        createEmptyCells: true,
         exportOptions: {
           modifier: {
             page: 'all'
-          }
+          },
+          format: {
+            body: function ( data ) {
+              return `${data}`.split(' ').join('\r\n') 
+            }
+        }
+        },
+        customize: function (xlsx) {
+          var sheet = xlsx.xl.worksheets['sheet1.xml'];
+          $( 'row c', sheet ).attr( 's', '25' );
+          var col = $('col', sheet);
+            col.each(function (i) {
+              $(this).attr('width', tablewidth[i]);
+          });
+
         }
       }],
       // перевод
@@ -43,47 +104,10 @@ function initTable(data) {
         "infoEmpty": "Нет доступных записей",
         "infoFiltered": "(отфильтровано из _MAX_ всех записей)"
       },
-      // записываем id для каждой строки
-      createdRow: function( row, data, dataIndex ) {
-        $(row).on('click', () => studentId = users[dataIndex]._id)
-      }
     });
-
-    // выбор строки
-    $('#example tbody').on( 'click', 'tr', function () {
-        if ( $(this).hasClass('selected') ) {
-            $(this).removeClass('selected');
-        }
-        else {
-            table.$('tr.selected').removeClass('selected');
-            $(this).addClass('selected');
-        }
-    } );
-
-    // удаление строки
-    $('#button').click( function () {
-        table.row('.selected').remove().draw( false );
-        DeleteUser(studentId)
-    } );
-
-    // // нажатие на ячейку
-    // $('#example tbody').on('click', 'tr', function () {
-    //   let data = table.row( this ).data();
-    //   alert( 'You clicked on '+data[0]+'\'s row' );
-    // } );
-
-    // видимость столбцов
-    $('a.toggle-vis').on( 'click', function (e) {
-      e.preventDefault();
-
-        // Get the column API object
-        let column = table.column( $(this).attr('data-column') );
-
-        // Toggle the visibility
-        column.visible( ! column.visible() );
-    } );
   });
 }
+
 
 // Получение всех пользователей
 async function GetUsers() {
@@ -96,170 +120,171 @@ async function GetUsers() {
   if (response.ok === true) {
       // получаем данные
       const dataUsers = await response.json();
-      let rows = document.querySelector("tbody"); 
-      // dataUsers.forEach(user => {
-      //     // добавляем полученные элементы в таблицу
-      //     rows.append(row(user));
-      // });
       users = dataUsers;
       initTable(users.map(x => [x.name, x.age]));
   }
 }
 
-// Получение одного пользователя
-async function GetUser(id) {
-  const response = await fetch("/api/users/" + id, {
-      method: "GET",
-      headers: { "Accept": "application/json" }
-  });
-  if (response.ok === true) {
-      const user = await response.json();
-      studentId = user._id;
-      studentName.value = user.name;
-      studentAge.value = user.age;
-      modalAddStudent.classList.remove('hide')
+function getDataTable(values, hours, nameType) {
+  let datatable = [];
+  let subjects = values.map(x => x[0]);
+  let specialty = values.map(x => x[4]);
+  
+  datatable[0] = [typeIndex, nameType, subjects[0], specialty[0]];
+  setHours(hours[0], datatable[0])
+
+  for (let i = 1; i < values.length; i++) {
+    datatable[i] = [];
+    datatable[i][2] = subjects[i];
+    datatable[i][3] = specialty[i];
+    setHours(hours[i], datatable[i])
   }
+  return datatable;
 }
-// Добавление пользователя
-async function CreateUser(userName, userAge) {
-  const response = await fetch("api/users", {
-      method: "POST",
-      headers: { "Accept": "application/json", "Content-Type": "application/json" },
-      body: JSON.stringify({
-          name: userName,
-          age: parseInt(userAge, 10)
-      })
-  });
-  if (response.ok === true) {
-      const user = await response.json();
-      reset();
-      users.push(user);
-      table.data.push([user.name, user.age]);
+
+function getLastRow(datatable, hours) {
+  lastIndex = datatable.length;
+  datatable[lastIndex] = [];
+  datatable[lastIndex][4] = hours.reduce((sum,x) => sum+= +x['one'] || 0, 0);
+  datatable[lastIndex][6] = hours.reduce((sum,x) => sum+= +x['two'] || 0, 0);
+  if (datatable[lastIndex][4] || datatable[lastIndex][6]) {
+    firstPeriodHours += (datatable[lastIndex][4] || 0);
+    secondPeriodHours+=  (datatable[lastIndex][6] || 0);
+    datatable[lastIndex][8] = (datatable[lastIndex][4] || 0) + (datatable[lastIndex][6] || 0)
   }
+  datatable[lastIndex+1] = [];
+  typeIndex++;
+  return datatable;
 }
-// Изменение пользователя
-async function EditUser(userId, userName, userAge) {
-  const response = await fetch("api/users", {
-      method: "PUT",
-      headers: { "Accept": "application/json", "Content-Type": "application/json" },
-      body: JSON.stringify({
-          id: userId,
-          name: userName,
-          age: parseInt(userAge, 10)
-      })
-  });
-  if (response.ok === true) {
-      const user = await response.json();
-      reset();
-      document.querySelector("tr[data-rowid='" + user._id + "']").replaceWith(row(user));
+
+function getHours(values, isFuture) {
+  let hours = values.map(x => {
+    let key = 'one';
+    if (x[8]%2 === 0 && !isFuture || x[8]%2 === 1 && isFuture) {
+      key = 'two'
+    }
+    return {
+      [key]: x[3],
+    }
+  })
+  return hours;
+}
+
+function setHours(hours, row) {
+  let allHours = 0;
+  if (hours) {
+    if (hours['one']) {
+      row[4] = hours['one']
+      allHours+= +hours['one'];
+    } else if(hours['two']) {
+      row[6] = hours['two'];
+      allHours+= +hours['two'];
+    }
   }
-}
-// Удаление пользователя
-async function DeleteUser(id) {
-  const response = await fetch("/api/users/" + id, {
-      method: "DELETE",
-      headers: { "Accept": "application/json" }
-  });
-  if (response.ok === true) {
-      const user = await response.json();
-      document.querySelector("tr[data-rowid='" + user._id + "']").remove();
+  if (allHours) {
+    row[8] = allHours;
   }
+  return lastIndex;
 }
 
-// Обновление всех пользователей
-async function UpdateAllUsers(dataUsers) {
-  const response = await fetch("/api/users-update-all", {
-      method: "POST",
-      headers: { "Accept": "application/json", "Content-Type": "application/json" },
-      body: JSON.stringify({"users" : dataUsers})
-  });
-  if (response.ok === true) {
-
+function filterByType(values, typeFirst, typeSecond) {
+  let typeValues = {};
+  for (let i = 0; i < values.length; i++) {
+    let type = values[i][typeFirst];
+    if (typeSecond) {
+      type = `${values[i][typeFirst]}-${values[i][typeSecond]}`
+    }
+    if (!typeValues[type]) {
+      typeValues[type] = values[i]
+    } else {
+      if (values[i][4]) {
+        typeValues[type][4] = (typeValues[type][4] || 0) +values[i][4];
+      } else if (values[i][6]) {
+        typeValues[type][6] = (typeValues[type][6] || 0) + values[i][6];
+      }
+    }
   }
+  return Object.values(typeValues);
 }
 
-// сброс формы
-function reset() {
-  studentName.value = '';
-  studentAge.value = '';
-  studentId = '0';
-}
-// создание строки для таблицы
-function row(user) {
-
-  const tr = document.createElement("tr");
-  tr.setAttribute("data-rowid", user._id);
-
-  // const idTd = document.createElement("td");
-  // idTd.append(user._id);
-  // tr.append(idTd);
-
-  const nameTd = document.createElement("td");
-  nameTd.append(user.name);
-  tr.append(nameTd);
-
-  const ageTd = document.createElement("td");
-  ageTd.append(user.age);
-  tr.append(ageTd);
-    
-  const linksTd = document.createElement("td");
-
-  const editLink = document.createElement("a");
-  editLink.setAttribute("data-id", user._id);
-  editLink.setAttribute("style", "cursor:pointer;padding:15px;");
-  editLink.append("Изменить");
-  editLink.addEventListener("click", e => {
-      e.preventDefault();
-      GetUser(user._id);
-  });
-  linksTd.append(editLink);
-
-  const removeLink = document.createElement("a");
-  removeLink.setAttribute("data-id", user._id);
-  removeLink.setAttribute("style", "cursor:pointer;padding:15px;");
-  removeLink.append("Удалить");
-  removeLink.addEventListener("click", e => {
-
-      e.preventDefault();
-      DeleteUser(user._id);
-  });
-
-  linksTd.append(removeLink);
-  tr.appendChild(linksTd);
-
-  return tr;
-}
-// сброс значений формы
-document.getElementById("reset").addEventListener('click', (event) => {
-  reset();
-  modalAddStudent.classList.add('hide')
-})
-
-
-// отправка формы
-saveStudent.addEventListener("click", () => {
-  const id = studentId;
-  const name = studentName.value;
-  const age = studentAge.value;
-  if (id == 0) {
-    CreateUser(name, age);
-    table.row.add( [
-      name, age
-    ] ).draw( false );
-  } else {
-    EditUser(id, name, age);
+function prepareData(dataFuture, dataCurrent, nameType) {
+  if (dataFuture.length || dataCurrent.length) {
+    let dataHours = getHours(dataFuture, true).concat(getHours(dataCurrent))
+    let data = getDataTable(dataFuture.concat(dataCurrent), dataHours, nameType)
+    let filteredData = filterByType(data, 2, 3)
+    let wholeData = getLastRow(filteredData, dataHours);
+    return wholeData;
   }
-  modalAddStudent.classList.add('hide')
-});
+  return [];
+}
 
-GetUsers();
+function createData(allValues, generalType) {
+  let type = 'очная';
+  let additionalTypes = ['заочная', 'заочная сокращенная']
+  let { name, additionalName, namesType } = generalType;
+  let dataFuture = [];
+  if (additionalName) {
+    dataFuture = allValues.filter(x => x[1].includes(additionalName) && x[6] === type)
+  }
+  let data = allValues.filter(x => x[1].includes(name) && x[6] === type)
+  let preparedData = prepareData(dataFuture, data, namesType[0]);
 
-document.querySelector('#addStudent').addEventListener('click', () => modalAddStudent.classList.remove('hide'))
-document.querySelector('#button-edit').addEventListener('click', () => {
-  GetUser(studentId);
-  modalAddStudent.classList.remove('hide')
-})
+  let additionalDataFuture = [];
+  if (additionalName) {
+    additionalDataFuture = allValues.filter(x => x[1].includes(additionalName) && additionalTypes.includes(x[6]))
+  }
+  let additionalData = allValues.filter(x => x[1].includes(name) && additionalTypes.includes(x[6]))
+  let additionalPreparedData = prepareData(additionalDataFuture, additionalData, namesType[1]);
 
+  let datatable = preparedData.concat(additionalPreparedData);
+  return datatable;
+}
+
+function writeAllHours(datatable) {
+  datatable[datatable.length] = [];
+  let indexAllHours = datatable.length;
+  datatable[indexAllHours] = [];
+  datatable[indexAllHours][3] = 'Итог'
+  datatable[indexAllHours][4] = firstPeriodHours.toFixed(2);
+  datatable[indexAllHours][6] = secondPeriodHours.toFixed(2);
+  datatable[indexAllHours][8] = (+datatable[indexAllHours][4] + +datatable[indexAllHours][6]).toFixed(2);
+  return datatable;
+}
+
+function checkDataTable(datatable) {
+  for (let i = 0; i < datatable.length; i++) {
+    for (let j = 0; j < 10; j++) {
+      if (!datatable[i][j]) {
+        datatable[i][j] = '';
+      } else {
+        datatable[i][j] = `${datatable[i][j]}`.split(' ').join('\n') 
+      }
+    }
+  }
+  return datatable;
+}
+
+function getGroup(x) {
+  let indexGroup = x[1].search('гр.');
+  if (indexGroup !== -1) {
+    x[4] = x[1].slice(indexGroup+3);
+  }
+  return x;
+}
+
+function init(XL_row_object) {
+  let allValues = XL_row_object.map(x => Object.values(x)).filter(x => x.length === 11).map(x => getGroup(x));
+  
+  let datatable = []
+  datatable[0] = ['1','2','3','4','5','6','7','8','9','10']
+  for (let i = 0; i < typesName.length; i++) {
+    let data = createData(allValues, typesName[i]);
+    datatable = datatable.concat(data);
+  }
+  datatable = writeAllHours(datatable);
+  datatable = checkDataTable(datatable);
+  initTable(datatable)
+}
 
 $(document).ready(function(){
   $("#fileUploader").change(function(evt){
@@ -271,19 +296,21 @@ $(document).ready(function(){
               type: 'binary'
           });
           workbook.SheetNames.forEach(function(sheetName) {
-            
               let XL_row_object = XLSX.utils.sheet_to_row_object_array(workbook.Sheets[sheetName]);
-              let preparedData = XL_row_object.map(x => {
+              let allValues = XL_row_object.map(x => Object.values(x));
+              titleLength = Math.max(...allValues.map(x => x.length));
+              titles = Object.keys(XL_row_object[0]).map(x => {
                 return {
-                  age: x['возраст'],
-                  name: x['имя']
+                  title: x,
                 }
-              })
-              users = preparedData.map(x => Object.values(x));
-              table.clear();
-              table.rows.add(users);
-              table.draw();
-              UpdateAllUsers(preparedData);
+              });
+              init(XL_row_object);
+              // localStorage.setItem('d', JSON.stringify(XL_row_object))
+            
+              // table.clear();
+              // table.rows.add(allValues);
+              // table.draw();
+              // UpdateAllUsers(XL_row_object);
             })
         };
 
