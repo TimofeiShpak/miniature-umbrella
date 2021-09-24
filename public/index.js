@@ -253,7 +253,7 @@ function createData(allValues, generalType) {
   }
   let additionalData = allValues.filter(x => x[1].includes(name) && additionalTypes.includes(x[6]))
   let additionalPreparedData = prepareData(additionalDataFuture, additionalData, namesType[1]);
-  preparedData.concat(additionalPreparedData);
+  preparedData = preparedData.concat(additionalPreparedData);
 
   let mixDataFuture = [];
   if (additionalName) {
@@ -284,6 +284,10 @@ function writeAllHours(datatable) {
 function checkDataTable(datatable) {
   for (let i = 0; i < datatable.length; i++) {
     while (datatable[i][2] && !datatable[i][8]) {
+      if (datatable[i][0]) {
+        datatable[i+1][0] = datatable[i][0]
+        datatable[i+1][1] = datatable[i][1]
+      } 
       datatable.splice(i,1)
     }
     for (let j = 0; j < 10; j++) {
