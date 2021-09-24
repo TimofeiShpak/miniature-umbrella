@@ -53,10 +53,7 @@ let lastIndex = 0;
 let typeIndex = 1;
 let firstPeriodHours = 0;
 let secondPeriodHours = 0;
-let tablewidth = [5,14,14,14,7,7,7,7,7,7];
-
-let titles = [];
-let titleLength = 0;
+let tablewidth = [4,14,14,14,6,6,6,6,6,6];
 
 function initTable(data) {
   $(document).ready(function() {
@@ -328,6 +325,7 @@ $(document).ready(function(){
   $("#fileUploader").change(function(evt){
         let selectedFile = evt.target.files[0];
         let reader = new FileReader();
+        $(this).hide();
         reader.onload = function(event) {
           let data = event.target.result;
           let workbook = XLSX.read(data, {
@@ -335,20 +333,7 @@ $(document).ready(function(){
           });
           workbook.SheetNames.forEach(function(sheetName) {
               let XL_row_object = XLSX.utils.sheet_to_row_object_array(workbook.Sheets[sheetName]);
-              let allValues = XL_row_object.map(x => Object.values(x));
-              titleLength = Math.max(...allValues.map(x => x.length));
-              titles = Object.keys(XL_row_object[0]).map(x => {
-                return {
-                  title: x,
-                }
-              });
               init(XL_row_object);
-              // localStorage.setItem('d', JSON.stringify(XL_row_object))
-            
-              // table.clear();
-              // table.rows.add(allValues);
-              // table.draw();
-              // UpdateAllUsers(XL_row_object);
             })
         };
 
