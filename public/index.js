@@ -1,6 +1,7 @@
 let typesName = [
   {
     name: 'Лекции',
+    secondName: 'Коллоквиум',
     additionalName: 'Установочные лекции',
     namesType: ['Лекции д/о', 'Лекции з/о']
   },
@@ -151,10 +152,11 @@ function getLastRow(datatable, hours) {
     firstPeriodHours += (datatable[lastIndex][4] || 0);
     secondPeriodHours+=  (datatable[lastIndex][6] || 0);
     datatable[lastIndex][8] = (datatable[lastIndex][4] || 0) + (datatable[lastIndex][6] || 0)
+    datatable[lastIndex+1] = [];
+    typeIndex++;
+    return datatable;
   }
-  datatable[lastIndex+1] = [];
-  typeIndex++;
-  return datatable;
+  return [];
 }
 
 function getHours(values, isFuture) {
@@ -202,6 +204,7 @@ function filterByType(values, typeFirst, typeSecond) {
       } else if (values[i][6]) {
         typeValues[type][6] = (typeValues[type][6] || 0) + values[i][6];
       }
+      typeValues[type][8] = (typeValues[type][6] || 0) + (typeValues[type][4] || 0);
     }
   }
   return Object.values(typeValues);
@@ -221,12 +224,16 @@ function prepareData(dataFuture, dataCurrent, nameType) {
 function createData(allValues, generalType) {
   let type = 'очная';
   let additionalTypes = ['заочная', 'заочная сокращенная']
-  let { name, additionalName, namesType } = generalType;
+  let { name, additionalName, namesType, secondName } = generalType;
   let dataFuture = [];
   if (additionalName) {
     dataFuture = allValues.filter(x => x[1].includes(additionalName) && x[6] === type)
   }
   let data = allValues.filter(x => x[1].includes(name) && x[6] === type)
+  if (secondName) {
+    let secondData = allValues.filter(x => x[1].includes(secondName) && x[6] === type);
+    data = data.concat(secondData)
+  }
   let preparedData = prepareData(dataFuture, data, namesType[0]);
 
   let additionalDataFuture = [];
@@ -264,16 +271,18 @@ function checkDataTable(datatable) {
   return datatable;
 }
 
-function getGroup(x) {
+function unificationData(x) {
   let indexGroup = x[1].search('гр.');
   if (indexGroup !== -1) {
     x[4] = x[1].slice(indexGroup+3);
   }
+  x[3] = parseFloat(x[3]);
+  x[8] = parseFloat(x[8]);
   return x;
 }
 
 function init(XL_row_object) {
-  let allValues = XL_row_object.map(x => Object.values(x)).filter(x => x.length === 11).map(x => getGroup(x));
+  let allValues = XL_row_object.map(x => Object.values(x)).filter(x => x.length === 11).map(x => unificationData(x));
   
   let datatable = []
   datatable[0] = ['1','2','3','4','5','6','7','8','9','10']
