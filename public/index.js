@@ -74,9 +74,9 @@ let datableLength = 10;
 
 
 let additionalTypesName = 'Установочные';
-let nameForSecondTypes = 'Лекции';
-let secondTypesName = 'Коллоквиум';
-let changeVisibleName = 'Практические';
+let lectureName = 'Лекции';
+let secondLectureName = 'Коллоквиум';
+let practiseName = 'Практические';
 
 
 function initTable(data) {
@@ -307,7 +307,7 @@ function writeAllHours(datatable) {
 
 function checkDataTable(datatable) {
   for (let i = 0; i < datatable.length; i++) {
-    while (datatable[i][datatableTypeWorkloadIndex] && !datatable[i][allHoursIndex]) {
+    while (datatable[i][datatableSubjectIndex] && !datatable[i][allHoursIndex]) {
       if (datatable[i][datatablePointIndex]) {
         datatable[i+1][datatablePointIndex] = datatable[i][datatablePointIndex]
         datatable[i+1][datatableTypeWorkloadIndex] = datatable[i][datatableTypeWorkloadIndex]
@@ -351,12 +351,32 @@ function preparedTypes(values) {
   return preparedValues;
 }
 
+function changePlace(sortedTypes, name, index) {
+  let practiseIndex = sortedTypes.findIndex(x => x.name === name);
+  if (practiseIndex !== -1) {
+    [sortedTypes[index], sortedTypes[practiseIndex]] = [sortedTypes[practiseIndex], sortedTypes[index]] 
+  }
+}
+
+function sortTypes(types) {
+  let sortedTypes = types.sort((a,b) => {
+    if(a.name.toLowerCase() > b.name.toLowerCase()) {
+      return 1;
+    } else {
+      return -1;
+    }
+  });
+  changePlace(sortedTypes, lectureName, 0);
+  changePlace(sortedTypes, practiseName, 1);  
+  return sortedTypes;
+}
+
 function getTypes(values) {
   let preparedValues = preparedTypes(values);
   let uniqTypes = [...new Set(preparedValues)];
   let additinalType = uniqTypes.filter(x => x.includes(additionalTypesName));
   let genaralType = uniqTypes.filter(x => !x.includes(additionalTypesName));
-  let secondTypeIndex = genaralType.findIndex(x => x.includes(secondTypesName));
+  let secondTypeIndex = genaralType.findIndex(x => x.includes(secondLectureName));
   if (secondTypeIndex !== -1) {
     genaralType.splice(secondTypeIndex, 1);
   }
@@ -366,11 +386,11 @@ function getTypes(values) {
       additionalName = `${additionalTypesName} ${type.toLowerCase()}`
     }
     let secondName = '';
-    if (type === nameForSecondTypes) {
-      secondName = secondTypesName;
+    if (type === lectureName) {
+      secondName = secondLectureName;
     }
     let visibleType = type;
-    if (visibleType.includes(changeVisibleName)) {
+    if (visibleType.includes(practiseName)) {
       visibleType = 'Практика'
     }
     return {
@@ -380,7 +400,7 @@ function getTypes(values) {
       namesType: [`${visibleType} дневное обучение`, `${visibleType} заочное обучение`, `${visibleType} очно-заочное обучение`]
     }
   });
-  let sortedTypes = types.sort((a,b) => a.name.toLowerCase() > b.name.toLowerCase());
+  let sortedTypes = sortTypes(types);
   return sortedTypes;
 }
 
