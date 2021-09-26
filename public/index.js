@@ -380,7 +380,7 @@ function getTypes(values) {
       namesType: [`${visibleType} дневное обучение`, `${visibleType} заочное обучение`, `${visibleType} очно-заочное обучение`]
     }
   });
-  let sortedTypes = types.sort((a,b) => a.name > b.name);
+  let sortedTypes = types.sort((a,b) => a.name.toLowerCase() > b.name.toLowerCase());
   return sortedTypes;
 }
 
