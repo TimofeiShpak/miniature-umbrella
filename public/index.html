@@ -4,22 +4,59 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width" />
     <title>Нагрузка преподавателей</title>
-    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet" />
-    <link rel="stylesheet" href="https://cdn.datatables.net/1.10.12/css/jquery.dataTables.css">
-    <style>
 
-    </style>
+    <link rel="stylesheet" href="libraries/jquery.dataTables.css">
+    <link rel="stylesheet" href="libraries/select.dataTables.min.css">
 </head>
 <body>
-    <table class="table table-condensed table-striped table-bordered" id="example">
+    <div class="modal-wrapper hide" id="modalTeacher">
+        <div class="modal-content">
+            <div class="title" id="modalTitle"></div>
+            <div class="modal-item">
+                <label for="selectTeacher">Выберете преподавателя</label>
+                <select id="selectTeacher"></select>
+            </div>
+            <div class="modal-item">
+                <label for="selectModeWork">Выберете вид работ</label>
+                <form id="selectModeWork" class="selectModeWork">
+                    <div id="lectureOption">
+                        <input type="checkbox" value="lecture" id="lecture">
+                        <label>лекции</label>
+                    </div>
+                    <div id="laboratoryOption">
+                        <input type="checkbox" value="laboratory" id="laboratory">
+                        <label>лабораторные работы</label>
+                    </div>
+                    <div id="practiseOption">
+                        <input type="checkbox" value="practise" id="practise">
+                        <label>практика</label>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-buttons">
+                <button id="closeModal">отмена</button>
+                <button id="saveDataModal">сохранить</button>
+            </div>
+        </div>
+    </div>
+    <div id="tableTeacherWrapper" hidden>
+        <label for="tableTeacher">Выберете преподавателя</label>
+        <select id="tableTeacher"></select>
+        <span id="teacherHours"></span>
+    </div>
+    <div id="tableVisibleMenu"></div>
+    <table class="display" id="example">
     </table>
     <input type="file" id="fileUploader" />
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.16.2/xlsx.full.min.js"></script>
-    <script src="index.js" type="module"></script>
+    <input type="file" id="fileUploaderTeacher" />
+    <script src="libraries/xlsx.full.min.js"></script>
     <script src="libraries/jquery.min.js"></script>
     <script src="libraries/dataTables.min.js"></script>
     <script src="libraries/dataTables.buttons.min.js"></script>
     <script src="libraries/jszip.js"></script>
     <script src="libraries/buttons.html5.min.js"></script>
+    <script src="libraries/dataTables.select.min.js"></script>
+    <script src="index.js" type="module"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-modal/0.9.1/jquery.modal.min.js"></script>
 </body>
 </html>
