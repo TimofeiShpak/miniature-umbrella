@@ -7,7 +7,7 @@ const jsonParser = express.json();
 require('dotenv').config();
 
 const db = monk(process.env.MONGODB_URI || 'mongodb+srv://admin:Hora1234@cluster0.ouwqb.mongodb.net/myFirstDatabase?retryWrites=true&w=majority');
-const users = db.get('users');
+const subjects = db.get('subjects');
 
 const app = express();
 app.enable('trust proxy');
@@ -19,12 +19,12 @@ app.use(express.static('./public'));
 
 const notFoundPath = path.join(__dirname, 'public/404.html');
 
-app.get("/api/users", async (req, res) => {
+app.get("/getSubjects", async (req, res) => {
   try {
     if(!req.body) return res.status(404).sendFile(notFoundPath);
-    const dataUsers = await users.find({});
-    if (dataUsers) {
-      return res.send(dataUsers);
+    const dataSubjects = await subjects.find({});
+    if (dataSubjects) {
+      return res.send(dataSubjects);
     }
     return res.status(404).sendFile(notFoundPath);
   } catch (error) {
@@ -32,65 +32,13 @@ app.get("/api/users", async (req, res) => {
   }
 });
 
-app.get("/api/users/:id", async (req, res) => {
-  try {
-    if(!req.body) return res.status(404).sendFile(notFoundPath);
-    const id = req.params.id;
-    const dataUser = await users.findOne({_id: id});
-    if (dataUser) {
-      return res.send(dataUser);
-    }
-    return res.status(404).sendFile(notFoundPath);
-  } catch (error) {
-    return res.status(404).sendFile(notFoundPath);
-  }
-});
-
-app.post("/api/users", jsonParser, async (req, res) => {
+app.post("/save-subjects", jsonParser, async (req, res) => {
   try { 
     if(!req.body) return res.status(404).sendFile(notFoundPath);
-    const userName = req.body.name;
-    const userAge = req.body.age;
-    const user = {name: userName, age: userAge};
-    const created = await users.insert(user);
+    await subjects.remove();
+    const created = await subjects.insert({subjects: req.body.subjects});
     res.send(created);
   } catch(error) {
-    return res.status(404).sendFile(notFoundPath);
-  }
-}); 
-
-app.post("/api/users-update-all", jsonParser, async (req, res) => {
-  try { 
-    if(!req.body) return res.status(404).sendFile(notFoundPath);
-    await users.remove();
-    const created = await users.insert(req.body.users);
-    res.send(created);
-  } catch(error) {
-    return res.status(404).sendFile(notFoundPath);
-  }
-}); 
-
-app.delete("/api/users/:id", async (req, res) => {
-  try {
-    if(!req.body) return res.status(404).sendFile(notFoundPath);
-    const id = req.params.id;
-    const deleted = await users.findOneAndDelete({_id: id})
-    res.send(deleted);            
-  } catch {
-    return res.status(404).sendFile(notFoundPath);
-  }
-});
-
-app.put("/api/users", jsonParser, async (req, res) => {
-  try {       
-    if(!req.body) return res.status(404).sendFile(notFoundPath);
-    const id = req.body.id;
-    const userName = req.body.name;
-    const userAge = req.body.age;
-      
-    const updated = await users.findOneAndUpdate({_id: id}, { $set: {age: userAge, name: userName}}, {returnDocument: "after" })
-    res.send(updated);   
-  } catch {
     return res.status(404).sendFile(notFoundPath);
   }
 });
