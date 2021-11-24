@@ -98,6 +98,10 @@ function changeTable(teacher) {
       }
     })
     teacherHours.innerText = `Все количество часов ${hours}`
+    let otherData = dataSubjects.filter((x,i) => {
+      return !x.slice(-3).filter(y => y == teacher).length
+    }); 
+    newData = newData.concat(otherData)
   } else {
     newData = dataSubjects.slice(0)
     teacherHours.innerText = ''
