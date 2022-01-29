@@ -1,4 +1,4 @@
-import { titles, typeNames, teachers } from '../constants/constants.js'
+import { titles, typeNames, teachers } from '../../constants/constants.js'
 
 export function setData(value) {
   let allValues = value.map(x => Object.values(x))

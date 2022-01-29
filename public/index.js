@@ -1,4 +1,3 @@
-import { subjects, getSubjects } from './scripts/subjects.js'; 
+import { init } from './scripts/table/subjects.js';
 
-subjects();
-getSubjects();
+init();

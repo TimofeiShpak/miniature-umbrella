@@ -446,54 +446,6 @@ td, th {
   border: 1px solid grey;
 }
 
-.modal-wrapper {
-  min-width: 100vw;
-  min-height: 100vh;
-  height: 100%;
-  width: 100%;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  background-color: rgba(127, 127, 127, 0.3);
-  position: fixed;
-  z-index: 2;
-}
-
-.modal-content {
-  padding: 20px;
-  border-radius: 20px;
-  background-color: #fff;
-  z-index: 3;
-}
-
-.modal-item {
-  display: flex;
-}
-
-.modal-content > :nth-child(n) {
-  margin-bottom: 10px;
-}
-
-.modal-item label {
-  margin-right: 10px;
-}
-
-.modal-item input:checked + label {
-  color: blue;
-}
-
-.modal-item input:disabled + label {
-  color: grey;
-}
-
-.selectModeWork {
-  display: flex;
-}
-
-.hide {
-  display: none;
-}
-
 @media screen and (max-width: 767px) {
   .dataTables_wrapper .dataTables_info,
   .dataTables_wrapper .dataTables_paginate {

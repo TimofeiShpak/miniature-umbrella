@@ -5,10 +5,13 @@
     <meta name="viewport" content="width=device-width" />
     <title>Нагрузка преподавателей</title>
 
+    <link rel="stylesheet" href="libraries/bootstrap.min.css">
     <link rel="stylesheet" href="libraries/jquery.dataTables.css">
     <link rel="stylesheet" href="libraries/select.dataTables.min.css">
+    <link rel="stylesheet" href="./css/style.css">
 </head>
 <body>
+
     <div class="modal-wrapper hide" id="modalTeacher">
         <div class="modal-content">
             <div class="title" id="modalTitle"></div>
@@ -39,16 +42,44 @@
             </div>
         </div>
     </div>
-    <div id="tableTeacherWrapper" hidden>
-        <label for="tableTeacher">Выберете преподавателя</label>
-        <select id="tableTeacher"></select>
-        <span id="teacherHours"></span>
+
+    <div id="tableWrapper" hidden>
+        <button id="chooseProgram">Выберете программу</button>
+        <div id="tableTeacherWrapper">
+            <label for="tableTeacher">Выберете преподавателя</label>
+            <select id="tableTeacher"></select>
+            <span id="teacherHours"></span>
+        </div>
+        <div id="tableVisibleMenu"></div>
+        <table class="display" id="example"></table>
     </div>
-    <div id="tableVisibleMenu"></div>
-    <table class="display" id="example">
-    </table>
-    <input type="file" id="fileUploader" />
-    <input type="file" id="fileUploaderTeacher" />
+
+    <div id="saveNewProgram" class="saveNewProgram center hide">
+        <div>
+            <div>
+                <label for="programNameInput">Название программы</label><input id="programNameInput">
+                <div id="programNameInputError" class="error"></div>
+            </div>
+            <div id="saveNewProgramOptions" class="hide">
+                <div>
+                    <input type="file" id="fileUploader"/>
+                    <div id="fileUploaderError" class="hide error">Добавьте файл</div>
+                </div>
+                <button id="saveNewProgramBtn">Сохранить программу</button>
+            </div>
+            <div id="saveProgramOptions" class="hide">
+                <button id="saveProgramBtn">Сохранить программу</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="programs" class="hide center">
+        <div>Программы</div>
+        <div id="notProgram">Данные отсутствуют</div>
+        <div id="programsContainer"></div>
+        <button id="andNewProgram">Добавить новую программу</button>
+    </div>
+
     <script src="libraries/xlsx.full.min.js"></script>
     <script src="libraries/jquery.min.js"></script>
     <script src="libraries/dataTables.min.js"></script>
@@ -56,7 +87,8 @@
     <script src="libraries/jszip.js"></script>
     <script src="libraries/buttons.html5.min.js"></script>
     <script src="libraries/dataTables.select.min.js"></script>
+    <script src="libraries/bootstrap.min.js"></script>
     <script src="index.js" type="module"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-modal/0.9.1/jquery.modal.min.js"></script>
+    
 </body>
 </html>

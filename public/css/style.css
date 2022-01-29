@@ -1,0 +1,102 @@
+.modal-wrapper {
+  min-width: 100vw;
+  min-height: 100vh;
+  height: 100%;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: rgba(127, 127, 127, 0.3);
+  position: fixed;
+  z-index: 2;
+}
+
+.modal-content {
+  padding: 20px;
+  border-radius: 20px;
+  background-color: #fff;
+  z-index: 3;
+}
+
+.modal-item {
+  display: flex;
+}
+
+.modal-content > :nth-child(n) {
+  margin-bottom: 10px;
+}
+
+.modal-item label {
+  margin-right: 10px;
+}
+
+.modal-item input:checked + label {
+  color: blue;
+}
+
+.modal-item input:disabled + label {
+  color: grey;
+}
+
+.selectModeWork {
+  display: flex;
+}
+
+.active-btn {
+  background-color: blue;
+  border-color: aliceblue;
+  color: white;
+}
+
+.notProgram {
+  font-size: 20px;
+}
+
+.interactive {
+  display: flex;
+  justify-content: space-between;
+}
+
+.interactive:hover {
+  cursor: pointer;
+  color: blue;
+}
+
+.error {
+  color: red;
+}
+
+.programs-dropdown {
+  background-image: url(../icons/three-dots.png);
+  width: 40px;
+  height: 20px;
+  display: block;
+  background-size: cover;
+  position: relative;
+  margin-left: 10px;
+}
+
+.dropdown-toggle::after {
+  display: none;
+}
+
+.dropdown {
+  position: absolute;
+}
+
+.center {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  width: 100vw;
+  height: 100vh;
+}
+
+.center :nth-child(n) {
+  margin-bottom: 5px;
+}
+
+.hide {
+  display: none;
+}

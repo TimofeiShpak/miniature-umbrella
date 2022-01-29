@@ -56,4 +56,50 @@ const titles = ['№', 'НАЗВАНИЕ ДИСЦИПЛИН', 'экз', 'зач'
 
 const typeNames = ['экзамен', 'зачет', 'зачет с оценкой']
 const teachers = [{name: 'Егоров Игорь Владимирович'}, {name: 'Пчелинцева Светлана Вячеславовна'}]
-export { savedTypesName, titles, typeNames, teachers }
+
+const buttons = [{
+  'extend': 'excel',
+  text: 'Скачать excel',
+  className: 'exportExcel',
+  filename: 'list',
+  title: null,
+  createEmptyCells: true,
+  exportOptions: {
+    modifier: {
+      page: 'all'
+    },
+    format: {
+      body: function ( data ) {
+        return `${data}`.split(' ').join('\r\n') 
+      }
+  }
+  },
+}]
+
+const language = {
+  "lengthMenu": "Показать _MENU_ студентов на странице",
+  "zeroRecords": "Ничего не найдено - sorry",
+  "info": "Показать страницу _PAGE_ из _PAGES_",
+  "infoEmpty": "Нет доступных записей",
+  "infoFiltered": "(отфильтровано из _MAX_ всех записей)"
+}
+
+let columns = [];
+for (let i = 0; i < titles.length; i++) {
+  columns.push({ title: titles[i] || `${i+1} - столбец` });
+}
+
+const dataTableOptions = {
+  dom: 'Bfrtip',
+  paging: false,
+  ordering: false,
+  info: false,
+  searching: false,
+  bAutoWidth: false, 
+  select: true,
+  columns : columns,
+  buttons: buttons,
+  language: language,
+}
+
+export { savedTypesName, titles, typeNames, teachers, dataTableOptions }
