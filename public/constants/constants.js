@@ -52,7 +52,15 @@ const titles = ['№', 'НАЗВАНИЕ ДИСЦИПЛИН', 'экз', 'зач'
     'КП', 'КР', 'РГР', 'Зачетные единицы', 'Всего часов', 'лекции', 'лаб. работы',
     'практ. занятия', 'ВСЕГО аудиторн.', 'СРС', 'Практическая подготовка',
     'семестр 1', 'семестр 2', 'семестр 3', 'семестр 4', 'семестр 5', 'семестр 6',
-    'семестр 7', 'семестр 8', 'Кафедры', 'Коды компетенций', 'преподаватель лекций', 'преподаватель лабораторных', 'преподаватель практик'];
+    'семестр 7', 'семестр 8', 'Кафедры', 'Коды компетенций', 'преподаватель лекций', 
+    'преподаватель лабораторных', 'преподаватель практик'];
+
+const titlesTeachersTable = ['ФИО', 'занято часов', 'макс часов']
+
+const columnsTeachersTable = [];
+for (let i = 0; i < titlesTeachersTable.length; i++) {
+  columnsTeachersTable.push({ title: titlesTeachersTable[i] || `${i+1} - столбец` });
+}
 
 const typeNames = ['экзамен', 'зачет', 'зачет с оценкой']
 const teachers = [{name: 'Егоров Игорь Владимирович'}, {name: 'Пчелинцева Светлана Вячеславовна'}]
@@ -78,7 +86,7 @@ const buttons = [{
 
 const language = {
   "lengthMenu": "Показать _MENU_ студентов на странице",
-  "zeroRecords": "Ничего не найдено - sorry",
+  "zeroRecords": "Данных нет",
   "info": "Показать страницу _PAGE_ из _PAGES_",
   "infoEmpty": "Нет доступных записей",
   "infoFiltered": "(отфильтровано из _MAX_ всех записей)"
@@ -92,7 +100,6 @@ for (let i = 0; i < titles.length; i++) {
 const dataTableOptions = {
   dom: 'Bfrtip',
   paging: false,
-  ordering: false,
   info: false,
   searching: false,
   bAutoWidth: false, 
@@ -100,6 +107,24 @@ const dataTableOptions = {
   columns : columns,
   buttons: buttons,
   language: language,
+  "columnDefs": [
+    { "type": "num", targets: [2, 23] }
+  ]
 }
 
-export { savedTypesName, titles, typeNames, teachers, dataTableOptions }
+const dataTeachersTable = {
+  dom: 'Bfrtip',
+  paging: false,
+  info: false,
+  searching: false,
+  bAutoWidth: false, 
+  select: true,
+  columns : columnsTeachersTable,
+  language: language,
+  buttons: [],
+  "columnDefs": [
+    { "type": "num", targets: [1, 2] }
+  ]
+}
+
+export { savedTypesName, titles, typeNames, teachers, dataTableOptions, dataTeachersTable }

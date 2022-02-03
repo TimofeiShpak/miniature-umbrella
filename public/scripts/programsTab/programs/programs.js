@@ -3,29 +3,30 @@ import { openEditProgram, saveEditionProgram, deleteProgram } from './programsAc
 
 let programNames = [];
 
-export function initPrograms() {
-  andNewProgram.addEventListener('click', () => {
-    saveNewProgram.classList.remove('hide')
-    saveNewProgramOptions.classList.remove('hide')
-    notProgram.classList.add('hide')
-    programs.classList.add('hide')
-  })
-  saveProgramBtn.addEventListener('click', () => saveEditionProgram())
-  showPrograms();
-}
+andNewProgram.addEventListener('click', () => {
+  saveNewProgram.classList.remove('hide')
+  saveNewProgramOptions.classList.remove('hide')
+  notProgram.classList.add('hide')
+  programs.classList.add('hide')
+})
+
+saveProgramBtn.addEventListener('click', () => saveEditionProgram())
 
 export function getProgramNames() {
   return programNames
 }
 
 export async function showPrograms() {
-  tableWrapper.hidden = true;
+  tableWrapper.classList.add('hide');
+  saveNewProgram.classList.add('hide');
+  modalTeacher.classList.add('hide');
   programs.classList.remove('hide')
-  let programsData = await api.getProgramsWithoutSubjects();
+  let programsData = await api.getPrograms();
   if (programsData) {
     programs.classList.remove('hide');
     if (programsData.length === 0) {
       notProgram.classList.remove('hide');
+      programsContainer.innerHTML = '';
     } else if (programsData.length) {
       notProgram.classList.add('hide');
       drawPrograms(programsData);
@@ -53,12 +54,14 @@ function drawPrograms(programsData) {
     }
     item.classList.add('interactive')
     item.innerText = `${i+1}.${programNames[i]}`
-    item.dataset.name = programNames[i]
+    item.dataset.id = programsData[i].programId
     item.append(button)
     programsContainer.append(item)
     let editBtn = document.querySelector(`#editProgramBtn-${programNames[i]}`)
     editBtn.onclick = () => openEditProgram(programsData[i])
     let deleteBtn = document.querySelector(`#deleteProgramBtn-${programNames[i]}`)
-    deleteBtn.onclick = () => deleteProgram(programsData[i]._id)
+    deleteBtn.onclick = () => deleteProgram({id: programsData[i]._id, programId: programsData[i].programId })
   }
 }
+
+chooseProgram.addEventListener('click', () => showPrograms())

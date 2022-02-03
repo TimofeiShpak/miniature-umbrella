@@ -1,4 +1,5 @@
-import { titles, typeNames, teachers } from '../../constants/constants.js'
+import { titles, typeNames, teachers } from '../../../constants/constants.js'
+import { api } from '../api/serverFunctions.js';
 
 export function setData(value) {
   let allValues = value.map(x => Object.values(x))
@@ -37,8 +38,9 @@ export function setData(value) {
   return data;
 }
 
-export function getTypes(preparedValue) {
+export async function getTypes(preparedValue) {
   let typesValue = [];
+  let teachers = await api.getTeachers();
   preparedValue.forEach((x, i) => {
     let indexType = x.slice(2, 5).findIndex(y => !!y);
     let type = `${x[1].trim()}-${typeNames[indexType]}`;
@@ -48,7 +50,7 @@ export function getTypes(preparedValue) {
       typesValue[i].lecture = {};
       let teacher = x.slice(-3,-2)[0];
       if (teacher) {
-        typesValue[i].lecture.teacher = teacher;
+        typesValue[i].lecture.teacher = (teachers.find(x => x.name === teacher) || {})._id;
         typesValue[i].lecture.time = parseInt(workModes[0]);
       }
     }
@@ -56,7 +58,7 @@ export function getTypes(preparedValue) {
       typesValue[i].laboratory = {};
       let teacher = x.slice(-2,-1)[0]
       if (teacher) {
-        typesValue[i].laboratory.teacher = teacher;
+        typesValue[i].laboratory.teacher = (teachers.find(x => x.name === teacher) || {})._id;
         typesValue[i].laboratory.time = parseInt(workModes[1]);
       }
     }
@@ -64,7 +66,7 @@ export function getTypes(preparedValue) {
       typesValue[i].practise = {}
       let teacher = x.slice(-1)[0]
       if (teacher) {
-        typesValue[i].practise.teacher = teacher;
+        typesValue[i].practise.teacher = (teachers.find(x => x.name === teacher) || {})._id;
         typesValue[i].practise.time = parseInt(workModes[2]);
       }
     }

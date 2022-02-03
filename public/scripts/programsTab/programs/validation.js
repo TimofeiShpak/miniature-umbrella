@@ -1,10 +1,11 @@
 import { getProgramNames } from './programs.js'
 
-export function checkNewProgram(saveFile, isEdit) {
+export function checkNewProgram(saveFile, programName) {
   let selectedNameProgram = programNameInput.value;
   let programNames = getProgramNames();
-  let selectedFile = fileUploader.files[0] || isEdit;
-  if (selectedNameProgram && selectedFile && !programNames.includes(selectedNameProgram)) {
+  let selectedFile = fileUploader.files[0] || programName;
+  let isAccessName = (!programNames.includes(selectedNameProgram) || selectedNameProgram === programName)
+  if (selectedNameProgram && selectedFile && isAccessName) {
     saveFile()
   } 
   if (!selectedFile) {
@@ -14,7 +15,7 @@ export function checkNewProgram(saveFile, isEdit) {
   }
   if (!selectedNameProgram) {
     programNameInputError.innerText = 'название программы обязательно'
-  } else if (programNames.includes(selectedNameProgram)) {
+  } else if (!isAccessName) {
     programNameInputError.innerText = 'программа с таким названием уже существует'
   } else {
     programNameInputError.innerText = ''

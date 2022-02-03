@@ -31,28 +31,40 @@ export const api = {
     return await apiMethod("GET", "/getSubjects")
   },
 
-  getProgramNames: async () => {
-    return await apiMethod("GET", "/getProgramNames")
+  getPrograms: async () => {
+    return await apiMethod("GET", "/getPrograms")
   },
 
-  getProgramsWithoutSubjects: async () => {
-    return await apiMethod("GET", "/getProgramsWithoutSubjects")
+  getTeachers: async () => {
+    return await apiMethod("GET", "/getTeachers")
+  },
+
+  getProgramById: async (dto) => {
+    return await apiMethod("POST", "/getProgramById", dto)
   },
 
   saveSubjects: async (dto) => {
     return await apiMethod("POST", "/saveSubjects", dto)
   },
 
-  getProgramByName: async (name) => {
-    return await apiMethod("POST", "/getProgramByName", { name })
+  getSubjectsByProgram: async (programId) => {
+    return await apiMethod("POST", "/getSubjectsByProgram", { programId })
   },
 
-  saveNewSubjects: async (subjects, name) => {
-    return await apiMethod("POST", "/saveNewSubjects", { subjects, name })
+  saveNewSubjects: async (subjects, programId, name) => {
+    return await apiMethod("POST", "/saveNewSubjects", { subjects, programId, name })
   },
 
-  deleteProgram: async (id) => {
-    return await apiMethod("POST", "/deleteProgram", { id })
+  deleteProgram: async (dto) => {
+    return await apiMethod("POST", "/deleteProgram", dto)
   },
+
+  saveTeacher: async (dto) => {
+    return await apiMethod("POST", "/saveTeacher", dto)
+  }, 
+
+  getSubjectsByTeacher: async (dto) => {
+    return await apiMethod("POST", "/getSubjectsByTeacher", dto)
+  }, 
 
 }

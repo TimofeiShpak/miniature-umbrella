@@ -1,9 +1,10 @@
-let valueType, valueTeacher, dataTable;
+let valueType, valueTeacher, dataTable, valueTeacherName;
 
-export function setTeacher(type, teacher, table) {
+export function setTeacher(type, teacher, table, teacherName) {
   valueType = type;
   valueTeacher = teacher;
   dataTable = table;
+  valueTeacherName = teacherName;
   modalTitle.innerText = `${type.title}`
   modalTeacher.classList.remove('hide');
   if (type.lecture) {
@@ -57,7 +58,7 @@ lecture.addEventListener('change', (e) => {
   if (e.target.checked) {
     valueType.lecture.teacher = valueTeacher
     valueType.lecture.time = dataTable[10]
-    dataTable[26] = valueTeacher
+    dataTable[26] = valueTeacherName
   } else {
     valueType.lecture.time = ''
     valueType.lecture.teacher = ''
@@ -69,7 +70,7 @@ laboratory.addEventListener('change', (e) => {
   if (e.target.checked) {
     valueType.laboratory.teacher = valueTeacher
     valueType.laboratory.time = dataTable[11]
-    dataTable[27] = valueTeacher
+    dataTable[27] = valueTeacherName
   } else {
     valueType.laboratory.teacher = ''
     valueType.laboratory.time = ''
@@ -81,7 +82,7 @@ practise.addEventListener('change', (e) => {
   if (e.target.checked) {
     valueType.practise.teacher = valueTeacher
     valueType.practise.time = dataTable[12]
-    dataTable[28] = valueTeacher
+    dataTable[28] = valueTeacherName
   } else {
     valueType.practise.teacher = ''
     valueType.practise.time = ''

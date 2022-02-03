@@ -8,6 +8,8 @@ require('dotenv').config();
 
 const db = monk(process.env.MONGODB_URI || 'mongodb+srv://admin:Hora1234@cluster0.ouwqb.mongodb.net/myFirstDatabase?retryWrites=true&w=majority');
 const subjects = db.get('subjects');
+const programs = db.get('programs');
+const teachers = db.get('teachers');
 
 const app = express();
 app.enable('trust proxy');
@@ -35,10 +37,10 @@ app.get("/getSubjects", async (req, res) => {
   }
 });
 
-app.get("/getProgramsWithoutSubjects", async (req, res) => {
+app.get("/getPrograms", async (req, res) => {
   try {
     if(!req.body) return res.status(404).sendFile(notFoundPath);
-    const data = await subjects.find({}, { fields: {name: 1} });
+    const data = await programs.find({});
     if (data) {
       return res.send(data);
     }
@@ -48,12 +50,12 @@ app.get("/getProgramsWithoutSubjects", async (req, res) => {
   }
 });
 
-app.get("/getProgramNames", async (req, res) => {
+app.get("/getTeachers", async (req, res) => {
   try {
     if(!req.body) return res.status(404).sendFile(notFoundPath);
-    const programNames = await subjects.distinct("name", {})
-    if (programNames) {
-      return res.send(programNames);
+    const data = await teachers.find({});
+    if (data) {
+      return res.send(data);
     }
     return res.status(404).sendFile(notFoundPath);
   } catch (error) {
@@ -61,12 +63,25 @@ app.get("/getProgramNames", async (req, res) => {
   }
 });
 
-app.post("/getProgramByName", jsonParser, async (req, res) => {
+app.post("/getProgramById", async (req, res) => {
   try {
     if(!req.body) return res.status(404).sendFile(notFoundPath);
-    const program = await subjects.find({ "name": req.body.name })
-    if (program) {
-      return res.send(program);
+    const data = await programs.find({ programId: req.body.programId });
+    if (data) {
+      return res.send(data);
+    }
+    return res.status(404).sendFile(notFoundPath);
+  } catch (error) {
+    return res.status(404).sendFile(notFoundPath);
+  }
+});
+
+app.post("/getSubjectsByProgram", jsonParser, async (req, res) => {
+  try {
+    if(!req.body) return res.status(404).sendFile(notFoundPath);
+    const subjectsByProgram = await subjects.find({ programId: req.body.programId })
+    if (subjectsByProgram) {
+      return res.send(subjectsByProgram);
     }
     return res.status(404).sendFile(notFoundPath);
   } catch (error) {
@@ -77,20 +92,25 @@ app.post("/getProgramByName", jsonParser, async (req, res) => {
 app.post("/saveSubjects", jsonParser, async (req, res) => {
   try { 
     if(!req.body) return res.status(404).sendFile(notFoundPath);
-    let edit = null;
     if (req.body.save) {
-      edit = { $set: {subjects: req.body.subjects} }
-    } else if (req.body.edit) {
-      edit = { $set: {name: req.body.name} }
-    }
-    if (edit) {
+       Object.keys(req.body.teachersData).map(async (x) => {
+        console.log(x);
+        await subjects.update(
+          { '_id' :  req.body.id}, 
+          { $set: { [x]:  req.body.teachersData[x] } }
+        );
+       })
       const targetData = await subjects.update(
         { '_id' :  req.body.id}, 
-        edit
+        { $set: { subject: req.body.subject } }
       );
       res.send(targetData);
-    } else {
-      return res.status(404).sendFile(notFoundPath);
+    } else if (req.body.edit) {
+      const targetData = await programs.update(
+        { '_id' :  req.body.id}, 
+        { $set: {name: req.body.name} }
+      );
+      res.send(targetData);
     }
   } catch(error) {
     return res.status(404).sendFile(notFoundPath);
@@ -100,8 +120,9 @@ app.post("/saveSubjects", jsonParser, async (req, res) => {
 app.post("/saveNewSubjects", jsonParser, async (req, res) => {
   try { 
     if(!req.body) return res.status(404).sendFile(notFoundPath);
-    const created = await subjects.insert({ subjects: req.body.subjects, name: req.body.name });
-    res.send(created)
+    await subjects.insert(req.body.subjects);
+    await programs.insert({programId: req.body.programId, name: req.body.name })
+    res.send({success: "true"})
   } catch(error) {
     return res.send(error);
   }
@@ -110,10 +131,47 @@ app.post("/saveNewSubjects", jsonParser, async (req, res) => {
 app.post("/deleteProgram", jsonParser, async (req, res) => {
   try { 
     if(!req.body) return res.status(404).sendFile(notFoundPath);
-    await subjects.findOneAndDelete({ _id: req.body.id });
+    await programs.findOneAndDelete({ _id: req.body.id });
+    await subjects.remove({ programId: req.body.programId })
     res.send(true)
   } catch(error) {
     return res.send(error);
+  }
+});
+
+app.post("/saveProgram", jsonParser, async (req, res) => {
+  try { 
+    if(!req.body) return res.status(404).sendFile(notFoundPath);
+    await programs.findOneAndDelete({ _id: req.body.id });
+    res.send(true)
+  } catch(error) {
+    return res.send(error);
+  }
+});
+
+app.post("/saveTeacher", jsonParser, async (req, res) => {
+  try { 
+    if(!req.body) return res.status(404).sendFile(notFoundPath);
+    if (req.body.save) {
+      const { name, maxHours, currentHours } = req.body
+      await teachers.insert({ name, maxHours, currentHours });
+    }
+    res.send(true)
+  } catch(error) {
+    return res.send(error);
+  }
+});
+
+app.post("/getSubjectsByTeacher", jsonParser, async (req, res) => {
+  try {
+    if(!req.body) return res.status(404).sendFile(notFoundPath);
+    const data = await subjects.find({ [req.body.teacherId]: { $exists: true } })
+    if (data) {
+      return res.send(data);
+    }
+    return res.status(404).sendFile(notFoundPath);
+  } catch (error) {
+    return res.status(404).sendFile(notFoundPath);
   }
 });
 

@@ -2,7 +2,7 @@ import { checkNewProgram } from './validation.js';
 import { api } from '../api/serverFunctions.js';
 import { showPrograms } from './programs.js';
 
-let dataId = null;
+let dataProgram = null;
 
 export function openEditProgram(data) {
   programNameInput.value = data.name;
@@ -10,13 +10,13 @@ export function openEditProgram(data) {
   saveProgramOptions.classList.remove('hide');
   saveNewProgram.classList.remove('hide');
   programs.classList.add('hide');
-  dataId = data._id;
+  dataProgram = data;
 }
 
 export function saveEditionProgram() {
   let saveFile = async () => {
     let dto = {
-      id: dataId,
+      id: dataProgram._id,
       name: programNameInput.value,
       edit: true,
     }
@@ -25,7 +25,7 @@ export function saveEditionProgram() {
     saveProgramOptions.classList.add('hide');
     saveNewProgram.classList.add('hide');
   }
-  checkNewProgram(saveFile, true)
+  checkNewProgram(saveFile, dataProgram.name)
 }
 
 export async function deleteProgram(id) {

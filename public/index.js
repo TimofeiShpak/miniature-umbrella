@@ -1,3 +1,3 @@
-import { init } from './scripts/table/subjects.js';
+import { initTabs } from './scripts/tabs.js'
 
-init();
+initTabs();

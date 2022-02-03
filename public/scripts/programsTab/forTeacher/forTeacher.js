@@ -71,7 +71,7 @@ function initTable(data, columns) {
       // перевод
       "language": {
         "lengthMenu": "Показать _MENU_ студентов на странице",
-        "zeroRecords": "Ничего не найдено - sorry",
+        "zeroRecords": "Данных нет",
         "info": "Показать страницу _PAGE_ из _PAGES_",
         "infoEmpty": "Нет доступных записей",
         "infoFiltered": "(отфильтровано из _MAX_ всех записей)"
