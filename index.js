@@ -21,21 +21,12 @@ app.use(express.static('./public'));
 
 const notFoundPath = path.join(__dirname, 'public/404.html');
 
-let programIds = [];
-
-app.get("/getSubjects", async (req, res) => {
-  try {
-    if(!req.body) return res.status(404).sendFile(notFoundPath);
-    const dataSubjects = await subjects.find({});
-    programIds = await subjects.distinct("_id", {})
-    if (dataSubjects) {
-      return res.send(dataSubjects);
-    }
-    return res.status(404).sendFile(notFoundPath);
-  } catch (error) {
-    return res.status(404).sendFile(notFoundPath);
-  }
-});
+const lectureTeacher = 26;
+const lectureHours = 10;
+const laboratoryTeacher = 27;
+const laboratoryHours  = 11;
+const practiseTeacher = 28;
+const practiseHours = 12;
 
 app.get("/getPrograms", async (req, res) => {
   try {
@@ -50,12 +41,37 @@ app.get("/getPrograms", async (req, res) => {
   }
 });
 
-app.get("/getTeachers", async (req, res) => {
+app.post("/getTeachers", async (req, res) => {
   try {
     if(!req.body) return res.status(404).sendFile(notFoundPath);
-    const data = await teachers.find({});
-    if (data) {
-      return res.send(data);
+    let fields = {maxHours: 1, name: 1, _id: 1};
+    if (req.body.isAdmin) {
+      fields = {maxHours: 1, name: 1, _id: 1, login: 1, password: 1};
+    }
+    const teachersData = await teachers.find({}, { fields });
+    let data = [];
+    if (teachersData.length) {
+      let sumElements = {};
+      for (let i = 0; i < teachersData.length; i++) {
+        sumElements[teachersData[i]._id] = { $sum: `$${teachersData[i]._id}` }
+      }
+      data = await subjects.aggregate(
+        [
+          {
+            $group: {
+              _id: null,
+              ...sumElements
+            }
+          }
+        ]
+      )
+    }
+    let teacherHours = data[0] || {};
+    for (let i = 0; i < teachersData.length; i++) {
+      teachersData[i].currentHours = teacherHours[teachersData[i]._id] || 0;
+    }
+    if (teachersData) {
+      return res.send(teachersData);
     }
     return res.status(404).sendFile(notFoundPath);
   } catch (error) {
@@ -93,16 +109,39 @@ app.post("/saveSubjects", jsonParser, async (req, res) => {
   try { 
     if(!req.body) return res.status(404).sendFile(notFoundPath);
     if (req.body.save) {
-       Object.keys(req.body.teachersData).map(async (x) => {
-        console.log(x);
-        await subjects.update(
-          { '_id' :  req.body.id}, 
-          { $set: { [x]:  req.body.teachersData[x] } }
-        );
-       })
+      const row = await subjects.find({ '_id': req.body.id});
+      const oldSubject = row[0].subject;
+      const newSubject = req.body.subject;
+      let setObj = {};
+      let unsetObj = {};
+
+      if (!oldSubject[lectureTeacher] && newSubject[lectureTeacher]) {
+        setObj[newSubject[lectureTeacher]] = +newSubject[lectureHours]
+      }
+      if (oldSubject[lectureTeacher] && !newSubject[lectureTeacher]) {
+        unsetObj[oldSubject[lectureTeacher]] = 1;
+      }
+
+      if (!oldSubject[laboratoryTeacher] && newSubject[laboratoryTeacher]) {
+        setObj[newSubject[laboratoryTeacher]] = +newSubject[laboratoryHours]
+      }
+      if (oldSubject[laboratoryTeacher] && !newSubject[laboratoryTeacher]) {
+        unsetObj[oldSubject[laboratoryTeacher]] = 1;
+      }
+
+      if (!oldSubject[practiseTeacher] && newSubject[practiseTeacher]) {
+        setObj[newSubject[practiseTeacher]] = +newSubject[practiseHours]
+      }
+      if (oldSubject[practiseTeacher] && !newSubject[practiseTeacher]) {
+        unsetObj[oldSubject[practiseTeacher]] = 1;
+      }
+      res.send(row);
       const targetData = await subjects.update(
         { '_id' :  req.body.id}, 
-        { $set: { subject: req.body.subject } }
+        { 
+          $set: { subject: req.body.subject, ...setObj } ,
+          $unset: { ...unsetObj } 
+        }
       );
       res.send(targetData);
     } else if (req.body.edit) {
@@ -139,22 +178,22 @@ app.post("/deleteProgram", jsonParser, async (req, res) => {
   }
 });
 
-app.post("/saveProgram", jsonParser, async (req, res) => {
-  try { 
-    if(!req.body) return res.status(404).sendFile(notFoundPath);
-    await programs.findOneAndDelete({ _id: req.body.id });
-    res.send(true)
-  } catch(error) {
-    return res.send(error);
-  }
-});
-
 app.post("/saveTeacher", jsonParser, async (req, res) => {
   try { 
     if(!req.body) return res.status(404).sendFile(notFoundPath);
-    if (req.body.save) {
-      const { name, maxHours, currentHours } = req.body
-      await teachers.insert({ name, maxHours, currentHours });
+    let setObj = {};
+    Object.keys(req.body).map(x => {
+      if (x && x !== 'id') {
+        setObj[x] = req.body[x]
+      }
+    })
+    if (req.body.id) {
+      await teachers.update(
+        { '_id' :  req.body.id}, 
+        { $set: setObj },
+      );
+    } else {
+      await teachers.insert(setObj);
     }
     res.send(true)
   } catch(error) {
@@ -170,6 +209,36 @@ app.post("/getSubjectsByTeacher", jsonParser, async (req, res) => {
       return res.send(data);
     }
     return res.status(404).sendFile(notFoundPath);
+  } catch (error) {
+    return res.status(404).sendFile(notFoundPath);
+  }
+});
+
+app.post("/deleteTeacher", jsonParser, async (req, res) => {
+  try { 
+    if(!req.body) return res.status(404).sendFile(notFoundPath);
+    await teachers.findOneAndDelete({ _id: req.body.id });
+    await subjects.update(
+      { subject: req.body.id }, 
+      { $set: { "subject.$" : "" }, $unset: { [req.body.id]:1 } },
+    );
+    res.send(true)
+  } catch(error) {
+    return res.send(error);
+  }
+});
+
+app.post("/checkTeacher", jsonParser, async (req, res) => {
+  try {
+    if(!req.body) return res.status(404).sendFile(notFoundPath);
+    const data = await teachers.find({
+      login: req.body.login,
+      password: req.body.password
+    });
+    if (data) {
+      return res.send(data);
+    }
+    return res.send(false);
   } catch (error) {
     return res.status(404).sendFile(notFoundPath);
   }

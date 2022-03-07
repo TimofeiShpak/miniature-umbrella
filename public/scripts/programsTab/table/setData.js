@@ -1,5 +1,4 @@
-import { titles, typeNames, teachers } from '../../../constants/constants.js'
-import { api } from '../api/serverFunctions.js';
+import { titles, typeNames } from '../../constants/constants.js'
 
 export function setData(value) {
   let allValues = value.map(x => Object.values(x))
@@ -38,41 +37,35 @@ export function setData(value) {
   return data;
 }
 
-export async function getTypes(preparedValue) {
-  let typesValue = [];
-  let teachers = await api.getTeachers();
-  preparedValue.forEach((x, i) => {
-    let indexType = x.slice(2, 5).findIndex(y => !!y);
-    let type = `${x[1].trim()}-${typeNames[indexType]}`;
-    let workModes = x.slice(10, 13);
-    typesValue[i] = {};
-    if (parseInt(workModes[0])) {
-      typesValue[i].lecture = {};
-      let teacher = x.slice(-3,-2)[0];
-      if (teacher) {
-        typesValue[i].lecture.teacher = (teachers.find(x => x.name === teacher) || {})._id;
-        typesValue[i].lecture.time = parseInt(workModes[0]);
-      }
+export function getType(data) {
+  let indexType = data.slice(2, 5).findIndex(y => !!y);
+  let type = {}
+  type.title = `${data[1].trim()}-${typeNames[indexType]}`;
+  if (data[10]) {
+    type.lecture = {};
+    let teacher = data[26];
+    if (teacher) {
+      type.lecture.teacher = data[26] || '';
+      type.lecture.time = data[12];
     }
-    if (parseInt(workModes[1])) {
-      typesValue[i].laboratory = {};
-      let teacher = x.slice(-2,-1)[0]
-      if (teacher) {
-        typesValue[i].laboratory.teacher = (teachers.find(x => x.name === teacher) || {})._id;
-        typesValue[i].laboratory.time = parseInt(workModes[1]);
-      }
+  }
+  if (data[11]) {
+    type.laboratory = {};
+    let teacher = data[27]
+    if (teacher) {
+      type.laboratory.teacher = data[27] || '';
+      type.laboratory.time = data[11];
     }
-    if (parseInt(workModes[2])) {
-      typesValue[i].practise = {}
-      let teacher = x.slice(-1)[0]
-      if (teacher) {
-        typesValue[i].practise.teacher = (teachers.find(x => x.name === teacher) || {})._id;
-        typesValue[i].practise.time = parseInt(workModes[2]);
-      }
+  }
+  if (data[12]) {
+    type.practise = {}
+    let teacher = data[28]
+    if (teacher) {
+      type.practise.teacher = data[28] || '';
+      type.practise.time = data[12];
     }
-    typesValue[i].title = type;
-  })
-  return typesValue;
+  }
+  return type;
 }
 
 function fillEmptyCell(data) {

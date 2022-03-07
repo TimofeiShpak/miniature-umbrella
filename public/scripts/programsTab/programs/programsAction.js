@@ -1,5 +1,5 @@
 import { checkNewProgram } from './validation.js';
-import { api } from '../api/serverFunctions.js';
+import { api } from '../../api/serverFunctions.js';
 import { showPrograms } from './programs.js';
 
 let dataProgram = null;

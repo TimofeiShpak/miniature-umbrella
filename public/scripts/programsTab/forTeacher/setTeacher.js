@@ -1,12 +1,10 @@
-let valueType, valueTeacher, dataTable, valueTeacherName;
+let type, valueTeacher, dataTable;
 
-export function setTeacher(type, teacher, table, teacherName) {
-  valueType = type;
+export function setTeacher(oldType, teacher, data) {
   valueTeacher = teacher;
-  dataTable = table;
-  valueTeacherName = teacherName;
-  modalTitle.innerText = `${type.title}`
-  modalTeacher.classList.remove('hide');
+  dataTable = data;
+  modalTitle.innerText = `${oldType.title}`;
+  type = oldType;
   if (type.lecture) {
     lectureOption.hidden = false;
     if (type.lecture.teacher) {
@@ -56,36 +54,30 @@ export function setTeacher(type, teacher, table, teacherName) {
 
 lecture.addEventListener('change', (e) => {
   if (e.target.checked) {
-    valueType.lecture.teacher = valueTeacher
-    valueType.lecture.time = dataTable[10]
-    dataTable[26] = valueTeacherName
+    type.lecture.teacher = valueTeacher
+    type.lecture.time = dataTable[10]
   } else {
-    valueType.lecture.time = ''
-    valueType.lecture.teacher = ''
-    dataTable[26] = ''
+    type.lecture.time = ''
+    type.lecture.teacher = ''
   }
 })
 
 laboratory.addEventListener('change', (e) => {
   if (e.target.checked) {
-    valueType.laboratory.teacher = valueTeacher
-    valueType.laboratory.time = dataTable[11]
-    dataTable[27] = valueTeacherName
+    type.laboratory.teacher = valueTeacher
+    type.laboratory.time = dataTable[11]
   } else {
-    valueType.laboratory.teacher = ''
-    valueType.laboratory.time = ''
-    dataTable[27] = ''
+    type.laboratory.teacher = ''
+    type.laboratory.time = ''
   }
 })
 
 practise.addEventListener('change', (e) => {
   if (e.target.checked) {
-    valueType.practise.teacher = valueTeacher
-    valueType.practise.time = dataTable[12]
-    dataTable[28] = valueTeacherName
+    type.practise.teacher = valueTeacher
+    type.practise.time = dataTable[12]
   } else {
-    valueType.practise.teacher = ''
-    valueType.practise.time = ''
-    dataTable[28] = ''
+    type.practise.teacher = ''
+    type.practise.time = ''
   }
 })

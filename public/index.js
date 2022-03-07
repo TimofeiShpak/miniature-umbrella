@@ -1,3 +1,3 @@
-import { initTabs } from './scripts/tabs.js'
+import { initApp } from './scripts/authorization.js'
 
-initTabs();
+initApp();

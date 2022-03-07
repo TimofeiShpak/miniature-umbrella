@@ -1,4 +1,4 @@
-import { api } from "../api/serverFunctions.js";
+import { api } from "../../api/serverFunctions.js";
 
 let id = null;
 

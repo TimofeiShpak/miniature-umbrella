@@ -1,6 +1,6 @@
-import { titles } from "../../../constants/constants.js";
+import { titles } from "../../constants/constants.js";
 
-closeModal.addEventListener('click', () => modalTeacher.classList.toggle('hide'));
+closeModal.addEventListener('click', () => $('#modalSelectTeacher').modal('hide'));
 
 export function drawElements() {
   let items = [];

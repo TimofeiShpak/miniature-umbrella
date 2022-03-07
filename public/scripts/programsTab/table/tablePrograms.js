@@ -1,20 +1,19 @@
-import { setData, getTypes } from './setData.js';
+import { setData, getType } from './setData.js';
 import { setTeacher } from '../forTeacher/setTeacher.js';
-import { dataTableOptions } from '../../../constants/constants.js'
+import { dataTableOptions } from '../../constants/constants.js'
 import { showPrograms } from '../programs/programs.js';
-import { api } from '../api/serverFunctions.js';
+import { api } from '../../api/serverFunctions.js';
 import { checkNewProgram } from '../programs/validation.js';
 import { drawElements } from './drawElements.js';
 import { selectProgram, updateTableSubjects } from './selectProgram.js';
 
 let table;
 let rowIndex = 0;
-let modalData = null;
 let currentData = null;
 let currentRow = null;
 let dataSubjects = null;
 let dataBaseSubjects = null;
-let teachers = [];
+let onlySubjects = null;
 
 drawElements();
 
@@ -25,14 +24,16 @@ function initTable(data) {
 
     // выбор ячейки и строки
     $('#example tbody').on( 'click', 'td', function () {
-      let cell = table.cell( this );
-      let cellData = cell.data();
-      rowIndex = cell[0][0].row;
-      let cellIndex = cell[0][0].column;
-      currentData = Object.assign({}, modalData[rowIndex]);
-      currentRow = data[rowIndex].slice()
-      let teacher = teachers.find(x => x._id === selectTeacher.value)
-      setTeacher(currentData, selectTeacher.value, currentRow, teacher.name)
+      if (window.isAdmin) {
+        let cell = table.cell( this );
+        // let cellData = cell.data();
+        rowIndex = cell[0][0].row;
+        // let cellIndex = cell[0][0].column;
+        currentRow = data[rowIndex].slice();
+        currentData = getType(onlySubjects[rowIndex]);
+        $('#modalSelectTeacher').modal('show');
+        setTeacher(currentData, selectTeacher.value, currentRow)
+      }
     });
     table.on( 'select', function ( e, dt, type, indexes ) {
         let rowData = table.rows( indexes ).data().toArray();
@@ -47,37 +48,35 @@ function initTable(data) {
   });
 }
 
-async function updateTable(data) {
-  modalData = await getTypes(data)
+function updateTable(data) {
+  dataBaseSubjects = data;
+  onlySubjects = data.map(x => x.subject);
+  dataSubjects = onlySubjects.map(x => {
+    let subjectsRow = x.slice();
+    subjectsRow[26] = window.teachersName[subjectsRow[26]] || '';
+    subjectsRow[27] = window.teachersName[subjectsRow[27]] || '';
+    subjectsRow[28] = window.teachersName[subjectsRow[28]] || '';
+    return subjectsRow
+  });
   if (table) {
     table.clear();
-    table.rows.add(data);
+    table.rows.add(dataSubjects);
     table.draw();
   } else {
-    initTable(data)
+    initTable(dataSubjects)
   }
 }
 
 async function saveData() {
   let id = dataBaseSubjects[rowIndex]._id;
-  closeModal.click()
-  let teachersData = {};
-  if (currentData && currentData.lecture && currentData.lecture.teacher) {
-    teachersData[currentData.lecture.teacher] = currentData.lecture.time;
-  }
-  if (currentData && currentData.laboratory && currentData.laboratory.teacher) {
-    let teacher = currentData.laboratory.teacher;
-    teachersData[teacher] = (teachersData[teacher] || 0) + +currentData.laboratory.time;
-  }
-  if (currentData && currentData.practise && currentData.practise.teacher) {
-    let teacher = currentData.practise.teacher;
-    teachersData[teacher] = (teachersData[teacher] || 0) + +currentData.practise.time;
-  }
-  await api.saveSubjects({ subject: currentRow, id, save: true, teachersData });
+  let copyRow = currentRow.slice();
+  copyRow[26] = currentData.lecture && currentData.lecture.teacher || '';
+  copyRow[27] = currentData.laboratory && currentData.laboratory.teacher || '';
+  copyRow[28] = currentData.practise && currentData.practise.teacher || '';
+  await api.saveSubjects({ subject: copyRow, id, save: true });
   let data = await updateTableSubjects();
-  dataBaseSubjects = data;
-  dataSubjects = dataBaseSubjects.map(x => x.subject);
-  updateTable(dataSubjects);
+  await updateTable(data);
+  $('#modalSelectTeacher').modal('hide');
 }
 
 function saveFile() {
@@ -117,8 +116,7 @@ function saveFile() {
 saveDataModal.addEventListener('click', () => saveData())
 
 selectTeacher.addEventListener('change', (e) => {
-  let teacher = teachers.find(x => x._id === e.target.value)
-  setTeacher(currentData, e.target.value, currentRow, teacher.name)
+  setTeacher(currentData, e.target.value, currentRow)
 })
 
 saveNewProgramBtn.addEventListener('click', () => {
@@ -128,19 +126,15 @@ saveNewProgramBtn.addEventListener('click', () => {
 programs.addEventListener('click', async (event) => {
   let data = await selectProgram(event);
   if (data) {
-    dataBaseSubjects = data;
-    dataSubjects = dataBaseSubjects.map(x => x.subject);
-    updateTable(dataSubjects)
+    await updateTable(data)
   }
 });
 
 export async function initProgramsTab() {
-  teachers = await api.getTeachers();
-  selectTeacher.innerHTML = teachers.map(x => `<option value="${x._id}">${x.name}</option>`);
-  showPrograms();
+  selectTeacher.innerHTML = window.teachers.map(x => `<option value="${x._id}">${x.name} (${x.currentHours || 0}/${x.maxHours})</option>`);
+  await showPrograms();
   programsTab.classList.add('active');
   programsPage.classList.remove('hide');
-  await api.getSubjectsByTeacher({teacherId: teachers[1]._id})
 }
 
 export function hideProgramsTab() {

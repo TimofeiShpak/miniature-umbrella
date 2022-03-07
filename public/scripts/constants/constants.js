@@ -48,22 +48,27 @@ const savedTypesName = [
   },
 ];
 
-const titles = ['№', 'НАЗВАНИЕ ДИСЦИПЛИН', 'экз', 'зач', 'зач с оцен-кой',
-    'КП', 'КР', 'РГР', 'Зачетные единицы', 'Всего часов', 'лекции', 'лаб. работы',
-    'практ. занятия', 'ВСЕГО аудиторн.', 'СРС', 'Практическая подготовка',
+const titles = ['№', 'название дисциплин', 'экз', 'зач', 'зач с оцен-кой',
+    'КП', 'КР', 'РГР', 'зачетные единицы', 'Всего часов', 'лекции', 'лаб. работы',
+    'практ. занятия', 'всего аудиторн.', 'СРС', 'практическая подготовка',
     'семестр 1', 'семестр 2', 'семестр 3', 'семестр 4', 'семестр 5', 'семестр 6',
-    'семестр 7', 'семестр 8', 'Кафедры', 'Коды компетенций', 'преподаватель лекций', 
+    'семестр 7', 'семестр 8', 'кафедры', 'коды компетенций', 'преподаватель лекций', 
     'преподаватель лабораторных', 'преподаватель практик'];
 
 const titlesTeachersTable = ['ФИО', 'занято часов', 'макс часов']
 
 const columnsTeachersTable = [];
 for (let i = 0; i < titlesTeachersTable.length; i++) {
-  columnsTeachersTable.push({ title: titlesTeachersTable[i] || `${i+1} - столбец` });
+  columnsTeachersTable.push({ title: titlesTeachersTable[i] || '' });
 }
+// columnsTeachersTable.push({render : function ( data, type, row, meta ) {
+//   return '<button class="btn btn-secondary">редактировать</button>';
+// }})
+// columnsTeachersTable.push({render : function ( data, type, row, meta ) {
+//   return '<button class="btn btn-danger" >удалить</button>';
+// }})
 
 const typeNames = ['экзамен', 'зачет', 'зачет с оценкой']
-const teachers = [{name: 'Егоров Игорь Владимирович'}, {name: 'Пчелинцева Светлана Вячеславовна'}]
 
 const buttons = [{
   'extend': 'excel',
@@ -104,6 +109,7 @@ const dataTableOptions = {
   searching: false,
   bAutoWidth: false, 
   select: true,
+  scrollX: true,
   columns : columns,
   buttons: buttons,
   language: language,
@@ -113,7 +119,6 @@ const dataTableOptions = {
 }
 
 const dataTeachersTable = {
-  dom: 'Bfrtip',
   paging: false,
   info: false,
   searching: false,
@@ -123,8 +128,8 @@ const dataTeachersTable = {
   language: language,
   buttons: [],
   "columnDefs": [
-    { "type": "num", targets: [1, 2] }
+    { "type": "num", targets: [1, 2] },
   ]
 }
 
-export { savedTypesName, titles, typeNames, teachers, dataTableOptions, dataTeachersTable }
+export { savedTypesName, titles, typeNames, dataTableOptions, dataTeachersTable }

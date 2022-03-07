@@ -1,4 +1,5 @@
 async function apiMethod(method, url, body) {
+  loader.classList.remove('hide');
   if (method === "GET") {
     const response = await fetch(url, {
       method: "GET",
@@ -6,8 +7,10 @@ async function apiMethod(method, url, body) {
     });
     if (response.ok === true) {
       let data = await response.json();
-      return data
+      loader.classList.add('hide');
+      return data;
     } else {
+      loader.classList.add('hide');
       return null;
     }
   } else if (method === "POST") {
@@ -18,8 +21,10 @@ async function apiMethod(method, url, body) {
     });
     if (response.ok === true) {
         let data = await response.json();
+        loader.classList.add('hide');
         return data;
     } else {
+      loader.classList.add('hide');
       return null;
     }
   }
@@ -27,16 +32,12 @@ async function apiMethod(method, url, body) {
 
 export const api = {
 
-  getSubjects: async () => {
-    return await apiMethod("GET", "/getSubjects")
-  },
-
   getPrograms: async () => {
     return await apiMethod("GET", "/getPrograms")
   },
 
-  getTeachers: async () => {
-    return await apiMethod("GET", "/getTeachers")
+  getTeachers: async (dto) => {
+    return await apiMethod("POST", "/getTeachers", dto)
   },
 
   getProgramById: async (dto) => {
@@ -63,8 +64,16 @@ export const api = {
     return await apiMethod("POST", "/saveTeacher", dto)
   }, 
 
+  deleteTeacher: async (dto) => {
+    return await apiMethod("POST", "/deleteTeacher", dto)
+  }, 
+
   getSubjectsByTeacher: async (dto) => {
     return await apiMethod("POST", "/getSubjectsByTeacher", dto)
+  }, 
+
+  checkTeacher: async (dto) => {
+    return await apiMethod("POST", "/checkTeacher", dto)
   }, 
 
 }
