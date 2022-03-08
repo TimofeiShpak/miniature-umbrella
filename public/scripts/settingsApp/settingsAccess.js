@@ -1,9 +1,9 @@
 export function checkIsAdmin() {
-  if (window.isAdmin) {
-    andNewProgram.classList.remove('hide');
+  if (window.user.isAdmin) {
+    addNewProgram.classList.remove('hide');
     showModalTeacherBtn.classList.remove('hide');
   } else {
-    andNewProgram.classList.add('hide');
+    addNewProgram.classList.add('hide');
     showModalTeacherBtn.classList.add('hide');
   }
 }

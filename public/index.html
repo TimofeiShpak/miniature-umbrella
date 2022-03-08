@@ -16,6 +16,24 @@
             <span class="ring-span"></span>
         </div>
     </div>
+
+    <div id="modalConfirm" class="modal fade bd-example-modal-lg modalConfirm" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLabel">Подтверждение</h5>
+                </div>
+                <div class="modal-body">
+                    <div id="modalConfirmText"></div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-primary" id="modalConfirmCancel">отмена</button>
+                    <button class="btn btn-primary" id="modalConfirmSubmit">да</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <div id="modalLogIn" class="modal fade bd-example-modal-lg" tabindex="-1" role="dialog" aria-hidden="true">
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
@@ -115,9 +133,7 @@
                         </div>
                         <button class="btn btn-primary" id="saveNewProgramBtn">сохранить программу</button>
                     </div>
-                    <div id="saveProgramOptions" class="hide">
-                        <button class="btn btn-primary" id="saveProgramBtn">сохранить программу</button>
-                    </div>
+                    <button class="btn btn-primary" id="saveProgramBtn">сохранить программу</button>
                     <button class="btn btn-secondary" id="cancelAddProgramBtn">отмена</button>
                 </div>
             </div>
@@ -126,7 +142,7 @@
                 <div>Программы</div>
                 <div id="notProgram">Данные отсутствуют</div>
                 <div id="programsContainer"></div>
-                <button class="btn btn-primary" id="andNewProgram">Добавить новую программу</button>
+                <button class="btn btn-primary" id="addNewProgram">Добавить новую программу</button>
             </div>
         </div>
 
@@ -135,7 +151,7 @@
                 Добавить преподавателя
             </button>
 
-            <div id="addTacherModal" class="modal fade bd-example-modal-lg" tabindex="-1" role="dialog" aria-hidden="true">
+            <div id="addTeacherModal" class="modal fade bd-example-modal-lg" tabindex="-1" role="dialog" aria-hidden="true">
                 <div class="modal-dialog modal-lg">
                     <div class="modal-content">
                         <div class="modal-header">
@@ -143,6 +159,7 @@
                         </div>
                         <div id="modalEditTeacher">
                             <div class="modal-body">
+                                <div id="addTeacherModalError" class="error"></div>
                                 <div id="addTeacherInfoModal">
                                     <div class="modal-teacher-field">
                                         <label for="inputNameTeacher">ФИО</label>
@@ -153,14 +170,14 @@
                                         <label for="inputMaxHoursTeacher">максимальное количество часов</label>
                                         <input id="inputMaxHoursTeacher" type="number" min="0"/>
                                     </div>
-                                    <div id="inputMaxHoursTeacherError" class="hide error">укажите максимальное количество часов</div>
+                                    <div id="inputMaxHoursTeacherError" class="error"></div>
                                 </div>
                                 <div id="addTeacherProfileModal" class="addTeacherProfileModal">
                                     <div class="modal-teacher-field">
                                         <label for="inputLoginTeacher">логин</label>
                                         <input id="inputLoginTeacher"/>
                                     </div>
-                                    <div id="inputLoginTeacherError" class="hide error">укажите логин</div>
+                                    <div id="inputLoginTeacherError" class="error"></div>
                                     <div class="modal-teacher-field">
                                         <label for="inputPasswordTeacher">пароль</label>
                                         <input id="inputPasswordTeacher"/>

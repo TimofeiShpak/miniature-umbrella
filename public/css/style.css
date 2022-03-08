@@ -36,6 +36,14 @@
   border-bottom: 1px solid #fff;
 }
 
+.modalConfirm {
+  z-index: 1051;
+}
+
+.modalConfirm .modal-content {
+  height: 300px;
+}
+
 .modal-item {
   display: flex;
 }

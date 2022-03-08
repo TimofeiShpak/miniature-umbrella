@@ -1,29 +1,57 @@
+import { getTeachers } from "./initTeacher.js";
+
 export function validateTeacher() {
   let isValid = true;
-  let type = addTacherModal.dataset.type;
-  if (!inputNameTeacher.value && (type === 'edit' || type === 'add')) {
+  let type = addTeacherModal.dataset.type;
+  let login = inputLoginTeacher.value;
+  let password = inputPasswordTeacher.value;
+  let name = inputNameTeacher.value;
+  let maxHours = +inputMaxHoursTeacher.value;
+  let teachers = getTeachers();
+  let teacher = teachers[addTeacherModal.dataset.index];
+  if (!name && (type === 'edit' || type === 'add')) {
     isValid = false;
-    inputNameTeacherError.innerText = 'Укажите ФИО'
+    inputNameTeacherError.innerText = 'укажите ФИО'
   } else {
     inputNameTeacherError.innerText = ''
   }
-  if (!inputMaxHoursTeacher.value && (type === 'edit' || type === 'add')) {
+  if (!maxHours && (type === 'edit' || type === 'add')) {
     isValid = false;
-    inputMaxHoursTeacherError.classList.remove('hide')
+    inputMaxHoursTeacherError.innerText = 'укажите максимальное количество часов'
   } else {
-    inputMaxHoursTeacherError.classList.add('hide')
+    if (maxHours < +inputMaxHoursTeacher.min) {
+      isValid = false;
+      inputMaxHoursTeacherError.innerText = `максимальное количество часов не может быть меньше занятых ${inputMaxHoursTeacher.min}`
+    } else {
+      inputMaxHoursTeacherError.innerText = ''
+    }
   }
-  if (!inputLoginTeacher.value && (type === 'changeProfile' || type === 'add')) {
+  if (!login && (type === 'changeProfile' || type === 'add')) {
     isValid = false;
-    inputLoginTeacherError.classList.remove('hide')
+    inputLoginTeacherError.innerText = 'укажите логин';
   } else {
-    inputLoginTeacherError.classList.add('hide')
+    let teachersLogin = teachers.map(x => x.login);
+    if (teachersLogin.includes(login)) {
+      isValid = false;
+      inputLoginTeacherError.innerText = 'логин занят';
+    } else {
+      inputLoginTeacherError.innerText = '';
+    }
   }
-  if (!inputPasswordTeacher.value && (type === 'changeProfile' || type === 'add')) {
+  if (!password && (type === 'changeProfile' || type === 'add')) {
     isValid = false;
     inputPasswordTeacherError.classList.remove('hide')
   } else {
     inputPasswordTeacherError.classList.add('hide')
+  }
+  if (type === 'edit' && (teacher.name === name && teacher.maxHours === maxHours)) {
+    isValid = false;
+    addTeacherModalError.innerText = 'ничего не изменилось'
+  } else if (type === 'changeProfile' && (teacher.login === login && teacher.password === password)) {
+    isValid = false;
+    addTeacherModalError.innerText = 'ничего не изменилось'
+  } else {
+    addTeacherModalError.innerText = ''
   }
   return isValid;
 }

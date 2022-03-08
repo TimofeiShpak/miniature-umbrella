@@ -4,22 +4,22 @@ showModalTeacherBtn.addEventListener('click', openAddNewTeacher);
 hideModalTeacherBtn.addEventListener('click', hideTeacherModal);
 
 inputMaxHoursTeacher.addEventListener('input', (event) => {
-  event.target.value = Math.max(event.target.min, +(event.target.value.replaceAll(/[^0-9]/g, '')))
+  event.target.value = (event.target.value.replaceAll(/[^0-9]/g, ''))
 })
 
 function openAddNewTeacher() {
-  $('#addTacherModal').modal('show');
+  $('#addTeacherModal').modal('show');
   teacherModalLabel.innerText = 'Добавление преподавателя';
   deleteTeacherBtn.classList.add('hide');
   seeTeacherProfileBtn.classList.add('hide');
-  addTacherModal.dataset.type = 'add';
+  addTeacherModal.dataset.type = 'add';
   modalViewTeacher.classList.add('hide');
   modalEditTeacher.classList.remove('hide');
   addTeacherProfileModal.classList.remove('hide');
 }
 
-export function openEditTeacher(data) {
-  $('#addTacherModal').modal('show');
+export function openEditTeacher(data, index) {
+  $('#addTeacherModal').modal('show');
   teacherModalLabel.innerText = 'Редактирование преподавателя';
   deleteTeacherBtn.classList.remove('hide');
   seeTeacherProfileBtn.classList.remove('hide');
@@ -30,7 +30,8 @@ export function openEditTeacher(data) {
   inputMaxHoursTeacher.value = data.maxHours;
   inputMaxHoursTeacher.min = data.currentHours;
   inputNameTeacher.dataset.id = data._id;
-  addTacherModal.dataset.type = 'edit';
+  addTeacherModal.dataset.type = 'edit';
+  addTeacherModal.dataset.index = index;
   teacherData = data;
 }
 
@@ -41,12 +42,13 @@ export function hideTeacherModal() {
   inputNameTeacher.dataset.id = '';
   inputLoginTeacher.value = '';
   inputPasswordTeacher.value = '';
-  $('#addTacherModal').modal('hide');
-  inputMaxHoursTeacherError.classList.add('hide');
+  $('#addTeacherModal').modal('hide');
+  inputMaxHoursTeacherError.innerText = '';
   inputNameTeacherError.innerText = '';
-  inputLoginTeacherError.classList.add('hide');
+  inputLoginTeacherError.innerText = '';
   inputPasswordTeacherError.classList.add('hide');
   addTeacherInfoModal.classList.remove('hide');
+  addTeacherModalError.innerText = '';
 }
 
 seeTeacherProfileBtn.addEventListener('click', checkProfileTeacher)
@@ -67,12 +69,14 @@ function changeProfileTeacher() {
   seeTeacherProfileBtn.classList.add('hide');
   addTeacherInfoModal.classList.add('hide');
   addTeacherProfileModal.classList.remove('hide');
-  addTacherModal.dataset.type = 'changeProfile';
+  addTeacherModal.dataset.type = 'changeProfile';
   inputLoginTeacher.value = teacherData.login;
   inputPasswordTeacher.value = teacherData.password;
+  addTeacherModalError.innerText = '';
 }
 
 function cancelProfileTeacher() {
   modalViewTeacher.classList.add('hide');
   modalEditTeacher.classList.remove('hide');
+  addTeacherModalError.innerText = '';
 }

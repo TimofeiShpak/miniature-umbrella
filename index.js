@@ -7,6 +7,7 @@ const jsonParser = express.json();
 require('dotenv').config();
 
 const db = monk(process.env.MONGODB_URI || 'mongodb+srv://admin:Hora1234@cluster0.ouwqb.mongodb.net/myFirstDatabase?retryWrites=true&w=majority');
+// const db = monk(process.env.MONGODB_URI || 'mongodb://localhost:27017/?readPreference=primary&appname=MongoDB%20Compass&directConnection=true&ssl=false');
 const subjects = db.get('subjects');
 const programs = db.get('programs');
 const teachers = db.get('teachers');
@@ -46,7 +47,7 @@ app.post("/getTeachers", async (req, res) => {
     if(!req.body) return res.status(404).sendFile(notFoundPath);
     let fields = {maxHours: 1, name: 1, _id: 1};
     if (req.body.isAdmin) {
-      fields = {maxHours: 1, name: 1, _id: 1, login: 1, password: 1};
+      fields = {maxHours: 1, name: 1, _id: 1, login: 1, password: 1, isAdmin: 1};
     }
     const teachersData = await teachers.find({}, { fields });
     let data = [];
@@ -116,21 +117,21 @@ app.post("/saveSubjects", jsonParser, async (req, res) => {
       let unsetObj = {};
 
       if (!oldSubject[lectureTeacher] && newSubject[lectureTeacher]) {
-        setObj[newSubject[lectureTeacher]] = +newSubject[lectureHours]
+        setObj[newSubject[lectureTeacher]] = (setObj[newSubject[lectureTeacher]] || 0) + +newSubject[lectureHours]
       }
       if (oldSubject[lectureTeacher] && !newSubject[lectureTeacher]) {
         unsetObj[oldSubject[lectureTeacher]] = 1;
       }
 
       if (!oldSubject[laboratoryTeacher] && newSubject[laboratoryTeacher]) {
-        setObj[newSubject[laboratoryTeacher]] = +newSubject[laboratoryHours]
+        setObj[newSubject[laboratoryTeacher]] = (setObj[newSubject[lectureTeacher]] || 0) + +newSubject[laboratoryHours]
       }
       if (oldSubject[laboratoryTeacher] && !newSubject[laboratoryTeacher]) {
         unsetObj[oldSubject[laboratoryTeacher]] = 1;
       }
 
       if (!oldSubject[practiseTeacher] && newSubject[practiseTeacher]) {
-        setObj[newSubject[practiseTeacher]] = +newSubject[practiseHours]
+        setObj[newSubject[practiseTeacher]] = (setObj[newSubject[lectureTeacher]] || 0) + +newSubject[practiseHours]
       }
       if (oldSubject[practiseTeacher] && !newSubject[practiseTeacher]) {
         unsetObj[oldSubject[practiseTeacher]] = 1;
@@ -139,8 +140,8 @@ app.post("/saveSubjects", jsonParser, async (req, res) => {
       const targetData = await subjects.update(
         { '_id' :  req.body.id}, 
         { 
+          $unset: { ...unsetObj } ,
           $set: { subject: req.body.subject, ...setObj } ,
-          $unset: { ...unsetObj } 
         }
       );
       res.send(targetData);
@@ -261,6 +262,7 @@ app.use((error, req, res, next) => {
 });
 
 const port = process.env.PORT || 3000;
+
 app.listen(port, () => {
   console.log(`Listening at http://localhost:${port}`);
 });

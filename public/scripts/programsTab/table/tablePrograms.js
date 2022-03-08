@@ -6,6 +6,8 @@ import { api } from '../../api/serverFunctions.js';
 import { checkNewProgram } from '../programs/validation.js';
 import { drawElements } from './drawElements.js';
 import { selectProgram, updateTableSubjects } from './selectProgram.js';
+import { openConfirm } from '../../modal/confirm.js';
+import { getTeachers, getTeachersName, setTeacherHours } from '../../teachersTab/initTeacher.js';
 
 let table;
 let rowIndex = 0;
@@ -14,6 +16,7 @@ let currentRow = null;
 let dataSubjects = null;
 let dataBaseSubjects = null;
 let onlySubjects = null;
+let teacherHours = [];
 
 drawElements();
 
@@ -24,15 +27,23 @@ function initTable(data) {
 
     // выбор ячейки и строки
     $('#example tbody').on( 'click', 'td', function () {
-      if (window.isAdmin) {
+      if (window.user.isAdmin) {
         let cell = table.cell( this );
         // let cellData = cell.data();
         rowIndex = cell[0][0].row;
         // let cellIndex = cell[0][0].column;
         currentRow = data[rowIndex].slice();
-        currentData = getType(onlySubjects[rowIndex]);
+        currentData = getType(onlySubjects[rowIndex].slice());
+        let teachers = getTeachers();
+        selectTeacher.innerHTML = teachers.map((x,i) => `<option value="${i}">${x.name} (${x.currentHours || 0}/${x.maxHours})</option>`);
+        teacherHours = teachers.map(x => {
+          return {
+            currentHours: x.currentHours,
+            maxHours: x.maxHours
+          }
+        });
         $('#modalSelectTeacher').modal('show');
-        setTeacher(currentData, selectTeacher.value, currentRow)
+        setTeacher(currentData, 0, currentRow, teacherHours, teachers)
       }
     });
     table.on( 'select', function ( e, dt, type, indexes ) {
@@ -49,13 +60,14 @@ function initTable(data) {
 }
 
 function updateTable(data) {
+  let teachersName = getTeachersName();
   dataBaseSubjects = data;
   onlySubjects = data.map(x => x.subject);
   dataSubjects = onlySubjects.map(x => {
     let subjectsRow = x.slice();
-    subjectsRow[26] = window.teachersName[subjectsRow[26]] || '';
-    subjectsRow[27] = window.teachersName[subjectsRow[27]] || '';
-    subjectsRow[28] = window.teachersName[subjectsRow[28]] || '';
+    subjectsRow[26] = teachersName[subjectsRow[26]] || '';
+    subjectsRow[27] = teachersName[subjectsRow[27]] || '';
+    subjectsRow[28] = teachersName[subjectsRow[28]] || '';
     return subjectsRow
   });
   if (table) {
@@ -68,15 +80,19 @@ function updateTable(data) {
 }
 
 async function saveData() {
-  let id = dataBaseSubjects[rowIndex]._id;
-  let copyRow = currentRow.slice();
-  copyRow[26] = currentData.lecture && currentData.lecture.teacher || '';
-  copyRow[27] = currentData.laboratory && currentData.laboratory.teacher || '';
-  copyRow[28] = currentData.practise && currentData.practise.teacher || '';
-  await api.saveSubjects({ subject: copyRow, id, save: true });
-  let data = await updateTableSubjects();
-  await updateTable(data);
-  $('#modalSelectTeacher').modal('hide');
+  const action = async () => {
+    let id = dataBaseSubjects[rowIndex]._id;
+    let copyRow = currentRow.slice();
+    copyRow[26] = currentData.lecture && currentData.lecture.teacher || '';
+    copyRow[27] = currentData.laboratory && currentData.laboratory.teacher || '';
+    copyRow[28] = currentData.practise && currentData.practise.teacher || '';
+    setTeacherHours(teacherHours);
+    await api.saveSubjects({ subject: copyRow, id, save: true });
+    let data = await updateTableSubjects();
+    updateTable(data);
+    $('#modalSelectTeacher').modal('hide');
+  }
+  openConfirm(action, null, 'Вы уверены что хотите выполнить назначение? Это действие нельзя отменить.')
 }
 
 function saveFile() {
@@ -126,12 +142,11 @@ saveNewProgramBtn.addEventListener('click', () => {
 programs.addEventListener('click', async (event) => {
   let data = await selectProgram(event);
   if (data) {
-    await updateTable(data)
+    updateTable(data)
   }
 });
 
 export async function initProgramsTab() {
-  selectTeacher.innerHTML = window.teachers.map(x => `<option value="${x._id}">${x.name} (${x.currentHours || 0}/${x.maxHours})</option>`);
   await showPrograms();
   programsTab.classList.add('active');
   programsPage.classList.remove('hide');

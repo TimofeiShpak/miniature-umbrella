@@ -1,16 +1,18 @@
 import { checkNewProgram } from './validation.js';
 import { api } from '../../api/serverFunctions.js';
 import { showPrograms } from './programs.js';
+import { openConfirm } from '../../modal/confirm.js';
 
 let dataProgram = null;
 
 export function openEditProgram(data) {
   programNameInput.value = data.name;
   saveNewProgramOptions.classList.add('hide');
-  saveProgramOptions.classList.remove('hide');
+  saveProgramBtn.classList.remove('hide');
   saveNewProgram.classList.remove('hide');
   programs.classList.add('hide');
   dataProgram = data;
+  programNameInputError.innerText = '';
 }
 
 export function saveEditionProgram() {
@@ -22,13 +24,16 @@ export function saveEditionProgram() {
     }
     await api.saveSubjects(dto)
     await showPrograms();
-    saveProgramOptions.classList.add('hide');
+    programNameInput.value = '';
     saveNewProgram.classList.add('hide');
   }
   checkNewProgram(saveFile, dataProgram.name)
 }
 
 export async function deleteProgram(id) {
-  await api.deleteProgram(id);
-  await showPrograms();
+  const action = async (id) => {
+    await api.deleteProgram(id);
+    await showPrograms();
+  }
+  openConfirm(action, id, 'Вы уверены что хотите удалить программу? Это действие нельзя отменить.')
 }

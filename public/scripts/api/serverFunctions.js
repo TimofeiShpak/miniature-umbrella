@@ -4,7 +4,7 @@ async function apiMethod(method, url, body) {
     const response = await fetch(url, {
       method: "GET",
       headers: { "Accept": "application/json" }
-    });
+    })
     if (response.ok === true) {
       let data = await response.json();
       loader.classList.add('hide');
@@ -13,6 +13,17 @@ async function apiMethod(method, url, body) {
       loader.classList.add('hide');
       return null;
     }
+
+      // const data = await Promise.all([
+      //   fetch(url, {
+      //     method: "GET",
+      //     headers: { "Accept": "application/json" }
+      //   })
+      //   .then(res => res.json()),
+      //   new Promise((res) =>
+      //       setTimeout(() => res(), 5000)
+      //   )
+      // ])
   } else if (method === "POST") {
     const response = await fetch(url, {
       method: "POST",

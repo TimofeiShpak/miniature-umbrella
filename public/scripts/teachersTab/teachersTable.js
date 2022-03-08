@@ -7,7 +7,6 @@ let fullData = null;
 
 export function initTeachersTable(data, dbData) {
   fullData = dbData;
-  console.log(fullData)
   if (table) {
     updateTable(data)
   } else {
@@ -17,13 +16,13 @@ export function initTeachersTable(data, dbData) {
 
       // выбор ячейки и строки
       $('#tableTeachers tbody').on( 'click', 'td', function () {
-        if (window.isAdmin) {
+        if (window.user.isAdmin) {
           let cell = table.cell( this );
           // let cellData = cell.data();
           let rowIndex = cell[0][0].row;
           // let cellIndex = cell[0][0].column;
           // let currentRow = data[rowIndex].slice();
-          openEditTeacher(fullData[rowIndex]);
+          openEditTeacher(fullData[rowIndex], rowIndex);
         }
       });
       table.on( 'select', function ( e, dt, type, indexes ) {

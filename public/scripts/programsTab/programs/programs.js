@@ -2,11 +2,15 @@ import { api } from '../../api/serverFunctions.js';
 import { openEditProgram, saveEditionProgram, deleteProgram } from './programsAction.js';
 let programNames = [];
 
-andNewProgram.addEventListener('click', () => {
+addNewProgram.addEventListener('click', () => {
   saveNewProgram.classList.remove('hide')
   saveNewProgramOptions.classList.remove('hide')
   notProgram.classList.add('hide')
   programs.classList.add('hide')
+  saveProgramBtn.classList.add('hide');
+  programNameInputError.innerText = '';
+  fileUploaderError.classList.add('hide');
+  programNameInput.value = '';
 })
 
 cancelAddProgramBtn.addEventListener('click', () => {
@@ -48,7 +52,7 @@ function drawPrograms(programsData) {
     item.innerText = `${i+1}.${programNames[i]}`
     item.dataset.id = programsData[i].programId
     programsContainer.append(item)
-    if (window.isAdmin) {
+    if (window.user.isAdmin) {
       let button = document.createElement('div');
       button.innerHTML = `    
       <div class="dropdown">
