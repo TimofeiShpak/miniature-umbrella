@@ -13,17 +13,6 @@ async function apiMethod(method, url, body) {
       loader.classList.add('hide');
       return null;
     }
-
-      // const data = await Promise.all([
-      //   fetch(url, {
-      //     method: "GET",
-      //     headers: { "Accept": "application/json" }
-      //   })
-      //   .then(res => res.json()),
-      //   new Promise((res) =>
-      //       setTimeout(() => res(), 5000)
-      //   )
-      // ])
   } else if (method === "POST") {
     const response = await fetch(url, {
       method: "POST",
@@ -51,6 +40,10 @@ export const api = {
     return await apiMethod("POST", "/getTeachers", dto)
   },
 
+  getTeacherById: async (dto) => {
+    return await apiMethod("POST", "/getTeacherById", dto)
+  },
+
   getProgramById: async (dto) => {
     return await apiMethod("POST", "/getProgramById", dto)
   },
@@ -63,12 +56,24 @@ export const api = {
     return await apiMethod("POST", "/getSubjectsByProgram", { programId })
   },
 
+  getSubjectsByTeacher: async (dto) => {
+    return await apiMethod("POST", "/getSubjectsByTeacher", dto)
+  },
+
   saveNewSubjects: async (subjects, programId, name) => {
     return await apiMethod("POST", "/saveNewSubjects", { subjects, programId, name })
   },
 
+  saveNewProgram: async (dto) => {
+    return await apiMethod("POST", "/saveNewProgram", dto)
+  },
+
   deleteProgram: async (dto) => {
     return await apiMethod("POST", "/deleteProgram", dto)
+  },
+
+  deleteRow: async (dto) => {
+    return await apiMethod("POST", "/deleteRow", dto)
   },
 
   saveTeacher: async (dto) => {

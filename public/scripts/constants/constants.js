@@ -110,12 +110,21 @@ const dataTableOptions = {
   bAutoWidth: false, 
   select: true,
   scrollX: true,
+  scrollY: true,
+  "scrollCollapse": true,
   columns : columns,
   buttons: buttons,
   language: language,
   "columnDefs": [
     { "type": "num", targets: [2, 23] }
-  ]
+  ],
+  "oLanguage": {
+    "sEmptyTable": "Нет данных"
+  },
+  initComplete: function () {
+      var btns = $('.dt-button');
+      btns.addClass('btn btn-primary downloadExcel');
+  }
 }
 
 const dataTeachersTable = {

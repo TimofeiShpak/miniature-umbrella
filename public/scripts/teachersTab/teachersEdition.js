@@ -21,7 +21,6 @@ function openAddNewTeacher() {
 export function openEditTeacher(data, index) {
   $('#addTeacherModal').modal('show');
   teacherModalLabel.innerText = 'Редактирование преподавателя';
-  deleteTeacherBtn.classList.remove('hide');
   seeTeacherProfileBtn.classList.remove('hide');
   modalViewTeacher.classList.add('hide');
   modalEditTeacher.classList.remove('hide');
@@ -33,6 +32,11 @@ export function openEditTeacher(data, index) {
   addTeacherModal.dataset.type = 'edit';
   addTeacherModal.dataset.index = index;
   teacherData = data;
+  if (data._id === window.user._id) {
+    deleteTeacherBtn.classList.add('hide')
+  } else {
+    deleteTeacherBtn.classList.remove('hide')
+  }
 }
 
 export function hideTeacherModal() {

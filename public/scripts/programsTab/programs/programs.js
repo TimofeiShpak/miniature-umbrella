@@ -1,15 +1,16 @@
 import { api } from '../../api/serverFunctions.js';
 import { openEditProgram, saveEditionProgram, deleteProgram } from './programsAction.js';
 let programNames = [];
+let programsData = [];
 
 addNewProgram.addEventListener('click', () => {
   saveNewProgram.classList.remove('hide')
   saveNewProgramOptions.classList.remove('hide')
   notProgram.classList.add('hide')
   programs.classList.add('hide')
+  teacherSubjects.classList.add('hide')
   saveProgramBtn.classList.add('hide');
   programNameInputError.innerText = '';
-  fileUploaderError.classList.add('hide');
   programNameInput.value = '';
 })
 
@@ -17,6 +18,7 @@ cancelAddProgramBtn.addEventListener('click', () => {
   saveNewProgram.classList.add('hide')
   saveNewProgramOptions.classList.add('hide')
   programs.classList.remove('hide')
+  teacherSubjects.classList.remove('hide')
 })
 
 saveProgramBtn.addEventListener('click', () => saveEditionProgram())
@@ -27,11 +29,14 @@ export function getProgramNames() {
 
 export async function showPrograms() {
   tableWrapper.classList.add('hide');
+  visibleColumns.hidden = true;
+  visibleColumnsButton.classList.remove('active-btn')
   saveNewProgram.classList.add('hide');
-  programs.classList.remove('hide')
-  let programsData = await api.getPrograms();
+
+  programsData = await api.getPrograms();
   if (programsData) {
     programs.classList.remove('hide');
+    teacherSubjects.classList.remove('hide');
     if (programsData.length === 0) {
       notProgram.classList.remove('hide');
       programsContainer.innerHTML = '';
@@ -73,6 +78,10 @@ function drawPrograms(programsData) {
       deleteBtn.onclick = () => deleteProgram({id: programsData[i]._id, programId: programsData[i].programId })
     }
   }
+}
+
+export function getProgramsData() {
+  return programsData;
 }
 
 chooseProgram.addEventListener('click', () => showPrograms())

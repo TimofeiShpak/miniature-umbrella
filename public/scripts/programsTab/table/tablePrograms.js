@@ -1,13 +1,14 @@
 import { setData, getType } from './setData.js';
 import { setTeacher } from '../forTeacher/setTeacher.js';
 import { dataTableOptions } from '../../constants/constants.js'
-import { showPrograms } from '../programs/programs.js';
+import { getProgramsData, showPrograms } from '../programs/programs.js';
 import { api } from '../../api/serverFunctions.js';
 import { checkNewProgram } from '../programs/validation.js';
 import { drawElements } from './drawElements.js';
 import { selectProgram, updateTableSubjects } from './selectProgram.js';
 import { openConfirm } from '../../modal/confirm.js';
 import { getTeachers, getTeachersName, setTeacherHours } from '../../teachersTab/initTeacher.js';
+import { drawTeacherSubjects, selectTeacherSubject, updateTableSubjectsTeacher } from '../programs/teacherSubjects.js';
 
 let table;
 let rowIndex = 0;
@@ -20,9 +21,9 @@ let teacherHours = [];
 
 drawElements();
 
-function initTable(data) {
+function initTable() {
   $(document).ready(function() {
-    dataTableOptions.data = data
+    dataTableOptions.data = dataSubjects
     table = $('#example').DataTable(dataTableOptions);
 
     // выбор ячейки и строки
@@ -32,7 +33,7 @@ function initTable(data) {
         // let cellData = cell.data();
         rowIndex = cell[0][0].row;
         // let cellIndex = cell[0][0].column;
-        currentRow = data[rowIndex].slice();
+        currentRow = dataSubjects[rowIndex].slice();
         currentData = getType(onlySubjects[rowIndex].slice());
         let teachers = getTeachers();
         selectTeacher.innerHTML = teachers.map((x,i) => `<option value="${i}">${x.name} (${x.currentHours || 0}/${x.maxHours})</option>`);
@@ -43,6 +44,16 @@ function initTable(data) {
           }
         });
         $('#modalSelectTeacher').modal('show');
+        selectTeacherForm.classList.remove('hide')
+        window.subjectModal = 'edit'
+        if (window.type === 'program') {
+          modalTitle.innerText = 'Редактирование'
+          deleteRowModal.classList.remove('hide')
+        } else if (window.type === 'teacher') {
+          let program = (getProgramsData() || []).find(x => x.programId === dataBaseSubjects[rowIndex].programId)
+          modalTitle.innerText = `Редактирование (программа - ${program.name})`
+          deleteRowModal.classList.add('hide')
+        }
         setTeacher(currentData, 0, currentRow, teacherHours, teachers)
       }
     });
@@ -56,12 +67,27 @@ function initTable(data) {
       let column = table.column( $(this).attr('data-column') );
       column.visible( ! column.visible() );
     });
+
+    let elem = document.querySelector('.dataTables_scrollBody')
+    if (elem) { 
+      let height = document.documentElement.clientHeight - elem.getBoundingClientRect().top - 10 +'px'
+      elem.style.maxHeight = height
+      if (window.type === 'teacher' && elem.children && elem.children[0] && elem.children[0].children && elem.children[0].children[1] 
+        && elem.children[0].children[1].children) {
+        
+        [...elem.children[0].children[1].children].forEach(x => {
+          x.dataset.id = '1'
+          x.classList.add('table-row')
+        })
+
+      }
+    }
   });
 }
 
 function updateTable(data) {
   let teachersName = getTeachersName();
-  dataBaseSubjects = data;
+  dataBaseSubjects = [...data];
   onlySubjects = data.map(x => x.subject);
   dataSubjects = onlySubjects.map(x => {
     let subjectsRow = x.slice();
@@ -74,59 +100,112 @@ function updateTable(data) {
     table.clear();
     table.rows.add(dataSubjects);
     table.draw();
+    let elem = document.querySelector('.dataTables_scrollBody')
+    if (elem) { 
+      let height = document.documentElement.clientHeight - elem.getBoundingClientRect().top - 10 +'px'
+      elem.style.maxHeight = height
+      if (window.type === 'teacher' && elem.children && elem.children[0] && elem.children[0].children && elem.children[0].children[1] 
+        && elem.children[0].children[1].children) {
+        
+        [...elem.children[0].children[1].children].forEach(x => {
+          x.dataset.id = '1'
+          x.classList.add('table-row')
+        })
+
+      }
+    }
   } else {
-    initTable(dataSubjects)
+    initTable()
   }
 }
 
 async function saveData() {
-  const action = async () => {
-    let id = dataBaseSubjects[rowIndex]._id;
-    let copyRow = currentRow.slice();
-    copyRow[26] = currentData.lecture && currentData.lecture.teacher || '';
-    copyRow[27] = currentData.laboratory && currentData.laboratory.teacher || '';
-    copyRow[28] = currentData.practise && currentData.practise.teacher || '';
-    setTeacherHours(teacherHours);
-    await api.saveSubjects({ subject: copyRow, id, save: true });
-    let data = await updateTableSubjects();
-    updateTable(data);
-    $('#modalSelectTeacher').modal('hide');
+  if (window.subjectModal === 'edit') {
+    const action = async () => {
+      let id = dataBaseSubjects[rowIndex]._id;
+      let copyRow = currentRow.slice();
+      copyRow[26] = currentData.lecture && currentData.lecture.teacher || '';
+      copyRow[27] = currentData.laboratory && currentData.laboratory.teacher || '';
+      copyRow[28] = currentData.practise && currentData.practise.teacher || '';
+      let generalFieldLngth = copyRow.length - 3;
+      for (let i = 0; i < generalFieldLngth; i++) {
+        copyRow[i] = selectTeacherFields.children[i].children[1].value
+      }
+      setTeacherHours(teacherHours);
+      await api.saveSubjects({ subject: copyRow, id, save: true });
+      let data = []
+      if (window.type === 'program') {
+        data = await updateTableSubjects();
+      } else if (window.type === 'teacher') {
+        data = await updateTableSubjectsTeacher();
+      }
+      updateTable(data);
+      $('#modalSelectTeacher').modal('hide');
+    }
+    openConfirm(action, null, 'Вы уверены что хотите выполнить назначение? Это действие нельзя отменить.')
+  } else if (window.subjectModal === 'add') {
+    const action = async () => {
+      let programId = nameProgram.dataset.programId
+      let copyRow = [];
+      for (let i = 0; i < selectTeacherFields.children.length; i++) {
+        copyRow[i] = selectTeacherFields.children[i].children[1].value
+      }
+      await api.saveSubjects({ subject: copyRow, add: true, programId: programId });
+      let data = []
+      if (window.type === 'program') {
+        data = await updateTableSubjects();
+      } else if (window.type === 'teacher') {
+        data = await updateTableSubjectsTeacher();
+      }
+      updateTable(data);
+      $('#modalSelectTeacher').modal('hide');
+    }
+    openConfirm(action, null, 'Вы уверены что хотите выполнить назначение? Это действие нельзя отменить.')
   }
-  openConfirm(action, null, 'Вы уверены что хотите выполнить назначение? Это действие нельзя отменить.')
 }
 
-function saveFile() {
-  let reader = new FileReader();
-  reader.onload = async function(event) {
-    let data = event.target.result;
-    let workbook = XLSX.read(data, {
-        type: 'binary'
-    });
+async function saveFile() {
+  if (fileUploader.files && fileUploader.files[0]) {
+    let reader = new FileReader();
+    reader.onload = async function(event) {
+      let data = event.target.result;
+      let workbook = XLSX.read(data, {
+          type: 'binary'
+      });
 
-    let XL_row_object = XLSX.utils.sheet_to_row_object_array(workbook.Sheets[workbook.SheetNames[0]]);
-    let dataTable = setData(XL_row_object);
-    dataSubjects = dataTable.slice();
-    if (dataSubjects && dataSubjects.length) {
-      let name = programNameInput.value;
-      let programId = 'id' + (new Date()).getTime();
-      let newDataBaseSubjects = dataSubjects.slice(0, 2).map(x => {
-        return {
-          programId: programId,
-          subject: x,
-        }
-      })
-      await api.saveNewSubjects(newDataBaseSubjects, programId, name)
-      fileUploader.value = '';
-      programNameInput.value = '';
-      await showPrograms();
-      saveNewProgram.classList.add('hide')
-      saveNewProgramOptions.classList.add('hide')
-    }
-  };
-  reader.onerror = function(event) {
-    console.error("File could not be read! Code " + event.target.error.code);
-  };
-  reader.readAsBinaryString(fileUploader.files[0]);
+      let XL_row_object = XLSX.utils.sheet_to_row_object_array(workbook.Sheets[workbook.SheetNames[0]]);
+      let dataTable = setData(XL_row_object);
+      dataSubjects = dataTable.slice();
+      if (dataSubjects && dataSubjects.length) {
+        let name = programNameInput.value;
+        let programId = 'id' + (new Date()).getTime();
+        let newDataBaseSubjects = dataSubjects.slice(0, 10).map(x => {
+          return {
+            programId: programId,
+            subject: x,
+          }
+        })
+        await api.saveNewSubjects(newDataBaseSubjects, programId, name)
+        fileUploader.value = '';
+        programNameInput.value = '';
+        await showPrograms();
+        saveNewProgram.classList.add('hide')
+        saveNewProgramOptions.classList.add('hide')
+      }
+    };
+    reader.onerror = function(event) {
+      console.error("File could not be read! Code " + event.target.error.code);
+    };
+    reader.readAsBinaryString(fileUploader.files[0]);
+  } else {
+    let programId = 'id' + (new Date()).getTime();
+    let name = programNameInput.value;
+    await api.saveNewProgram({programId, name})
+    programNameInput.value = '';
+    await showPrograms();
+    saveNewProgram.classList.add('hide')
+    saveNewProgramOptions.classList.add('hide')
+  }
 }
 
 saveDataModal.addEventListener('click', () => saveData())
@@ -146,13 +225,46 @@ programs.addEventListener('click', async (event) => {
   }
 });
 
+teacherSubjects.addEventListener('click', async (event) => {
+  let data = await selectTeacherSubject(event);
+  if (data) {
+    updateTable(data)
+  }
+});
+
 export async function initProgramsTab() {
   await showPrograms();
   programsTab.classList.add('active');
   programsPage.classList.remove('hide');
+  drawTeacherSubjects();
 }
 
 export function hideProgramsTab() {
   programsTab.classList.remove('active');
   programsPage.classList.add('hide');
 }
+
+addRow.addEventListener('click', () => {
+  $('#modalSelectTeacher').modal('show');
+  selectTeacherForm.classList.add('hide')
+  deleteRowModal.classList.add('hide')
+  modalTitle.innerText = 'Добавить строку'
+  for (let i = 0; i < selectTeacherFields.children.length; i++) {
+    selectTeacherFields.children[i].children[1].value = ''
+    selectTeacherFields.children[i].children[2].innerText = ''
+  }
+  window.subjectModal = 'add'
+})
+
+deleteRowModal.addEventListener('click', async () => {
+  let id = dataBaseSubjects[rowIndex]._id;
+  await api.deleteRow({id})
+  $('#modalSelectTeacher').modal('hide');
+  let data = []
+  if (window.type === 'program') {
+    data = await updateTableSubjects();
+  } else if (window.type === 'teacher') {
+    data = await updateTableSubjectsTeacher();
+  }
+  updateTable(data);
+})

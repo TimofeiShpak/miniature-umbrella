@@ -44,8 +44,21 @@
   height: 300px;
 }
 
+#selectTeacherFields .modal-item label {
+  width: 225px;
+}
+
+#selectTeacherFields .modal-item span {
+  margin-left: 10px;
+}
+
 .modal-item {
   display: flex;
+}
+
+.modal-body {
+  max-height: 500px;
+  overflow: auto;
 }
 
 .modal-content > :not(:last-child) {
@@ -89,8 +102,10 @@
 }
 
 .interactive {
+  padding: 5px;
   display: flex;
   justify-content: space-between;
+  margin: 0;
 }
 
 .interactive:hover {
@@ -135,16 +150,17 @@
   display: none;
 }
 
-.dataTables_scroll {
-  border: 1px solid #111;
-  border-top: none;
-  border-bottom: none;
-}
-
 .tableTeachers.dataTable.no-footer {
-  border: none;
   margin-top: 20px;
   margin-left: 0;
+}
+
+.display.dataTable.no-footer .dataTables_empty {
+  text-align: start;  
+}
+
+.dataTables_wrapper.no-footer .dataTables_scrollBody {
+  border: none;
 }
 
 .tableTeachers.dataTable.no-footer td,
@@ -241,6 +257,36 @@ a.toggle-vis:not([href]):not([tabindex]) {
   top:-6px;
   right:-8px;
   box-shadow:0 0 20px #00008b;
+}
+.teacherSubjects {
+  margin-top: 20px;
+}
+.chooseProgram, .visibleColumnsButton, .downloadExcel, .addRow {
+  margin-bottom: 10px;
+}
+.visibleColumnsButton, .chooseProgram, .addRow {
+  margin-left: 10px;
+}
+
+.table-row {
+  position: relative;
+}
+
+.table-row:hover::after {
+  display: block;
+}
+
+.table-row::after {
+  display: none;
+  content: attr(data-id);
+  position: absolute;
+  left: 10px;
+  top: 3px;
+  background: #fff;
+  padding: 5px;
+  border-radius: 5px;
+  z-index: 1;
+  box-shadow: 0 0 10px rgba(0,0,0,0.5);
 }
 @keyframes animateC {
   0% {

@@ -63,7 +63,7 @@
     <div id="app" class="hide">
         <header class="header">
             <div id="tabs" class="tabs">
-                <div id="programsTab" class="tab">Программы</div>
+                <div id="programsTab" class="tab">Дисциплины</div>
                 <div id="teachersTab" class="tab">Преподаватели</div>
             </div>
             <div class="user">
@@ -76,34 +76,37 @@
                 <div class="modal-dialog modal-lg">
                     <div class="modal-content">
                         <div class="modal-header">
-                            <h5 class="modal-title" id="exampleModalLabel">Назначение преподавателя</h5>
+                            <h5 class="modal-title" id="modalTitle">Редактирование</h5>
                         </div>
                         <div class="modal-body">
-                            <div class="title" id="modalTitle"></div>
-                            <div class="modal-item">
-                                <label for="selectTeacher">Выберете преподавателя</label>
-                                <select id="selectTeacher"></select>
+                            <div id="selectTeacherForm">
+                                <div class="modal-item">
+                                    <label for="selectTeacher">Выберете преподавателя</label>
+                                    <select id="selectTeacher"></select>
+                                </div>
+                                <div class="modal-item">
+                                    <label for="selectModeWork">Выберете вид работ</label>
+                                    <form id="selectModeWork" class="selectModeWork">
+                                        <div id="lectureOption">
+                                            <input type="checkbox" value="lecture" id="lecture">
+                                            <label>лекции</label>
+                                        </div>
+                                        <div id="laboratoryOption">
+                                            <input type="checkbox" value="laboratory" id="laboratory">
+                                            <label>лабораторные работы</label>
+                                        </div>
+                                        <div id="practiseOption">
+                                            <input type="checkbox" value="practise" id="practise">
+                                            <label>практика</label>
+                                        </div>
+                                    </form>
+                                </div>
                             </div>
-                            <div class="modal-item">
-                                <label for="selectModeWork">Выберете вид работ</label>
-                                <form id="selectModeWork" class="selectModeWork">
-                                    <div id="lectureOption">
-                                        <input type="checkbox" value="lecture" id="lecture">
-                                        <label>лекции</label>
-                                    </div>
-                                    <div id="laboratoryOption">
-                                        <input type="checkbox" value="laboratory" id="laboratory">
-                                        <label>лабораторные работы</label>
-                                    </div>
-                                    <div id="practiseOption">
-                                        <input type="checkbox" value="practise" id="practise">
-                                        <label>практика</label>
-                                    </div>
-                                </form>
-                            </div>
+                            <div id="selectTeacherFields"></div>
                         </div>
                         <div class="modal-footer">
                             <button class="btn btn-secondary" id="closeModal">отмена</button>
+                            <button class="btn btn-danger" id="deleteRowModal">удалить</button>
                             <button class="btn btn-primary" id="saveDataModal">сохранить</button>
                         </div>
                     </div>
@@ -113,7 +116,11 @@
             <div id="tableWrapper" class="hide">
                 <div>
                     <span id="nameProgram"></span>
-                    <button class="btn btn-primary" id="chooseProgram">Выберете программу</button>
+                    <button class="btn btn-primary chooseProgram" id="chooseProgram">Вернуться назад</button>
+                    <button id="visibleColumnsButton" class="btn btn-primary visibleColumnsButton">
+                        Отображение столбцов
+                    </button>
+                    <button class="btn btn-primary addRow" id="addRow">Добавить строку</button>
                 </div>
                 <div id="tableVisibleMenu"></div>
                 <table class="display" id="example"></table>
@@ -129,7 +136,6 @@
                     <div id="saveNewProgramOptions" class="hide">
                         <div>
                             <input type="file" id="fileUploader"/>
-                            <div id="fileUploaderError" class="hide error">добавьте файл</div>
                         </div>
                         <button class="btn btn-primary" id="saveNewProgramBtn">сохранить программу</button>
                     </div>
@@ -143,6 +149,12 @@
                 <div id="notProgram">Данные отсутствуют</div>
                 <div id="programsContainer"></div>
                 <button class="btn btn-primary" id="addNewProgram">Добавить новую программу</button>
+            </div>
+
+            <div id="teacherSubjects" class="hide center teacherSubjects">
+                <div>Преподаватели</div>
+                <div id="notTeacherSubjects">Данные отсутствуют</div>
+                <div id="teacherSubjectsContainer"></div>
             </div>
         </div>
 

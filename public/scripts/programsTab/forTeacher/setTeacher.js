@@ -1,5 +1,4 @@
 let type, teacherId, dataTable, index, teachers, teachersHours;
-// let teachersHours = [];
 
 export function setTeacher(oldType, teacherIndex, data, hours, teachersData) {
   if (hours) {
@@ -11,9 +10,13 @@ export function setTeacher(oldType, teacherIndex, data, hours, teachersData) {
   index = teacherIndex;
   teacherId = teachers[index]._id;
   dataTable = data;
-  modalTitle.innerText = `${oldType.title}`;
   type = oldType;
   checkType();
+
+  [...selectTeacherFields.children].map((field,i) => {
+    field.children[1].value = data[i].trim()
+    field.children[2].innerText = data[i].trim()
+  })
 }
 
 function checkType() {

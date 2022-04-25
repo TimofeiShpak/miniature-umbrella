@@ -11,6 +11,7 @@ export function openEditProgram(data) {
   saveProgramBtn.classList.remove('hide');
   saveNewProgram.classList.remove('hide');
   programs.classList.add('hide');
+  teacherSubjects.classList.add('hide')
   dataProgram = data;
   programNameInputError.innerText = '';
 }
